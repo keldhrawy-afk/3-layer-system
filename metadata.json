@@ -1,0 +1,6 @@
+{
+  "name": "PrePilot Live Copilot",
+  "description": "AI-Powered Performance Marketing Operating System & Real-Time 5-Layer Diagnostic Engine",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
