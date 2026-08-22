@@ -21,6 +21,7 @@ import { Layer3DiagnosticEngineTab } from './components/Layer3DiagnosticEngineTa
 import { SnapshotVaultTab } from './components/SnapshotVaultTab';
 import { MarketBenchmarkTab } from './components/MarketBenchmarkTab';
 import { DecisionMatrixTab } from './components/DecisionMatrixTab';
+import { CommercialOutputsBoard } from './components/CommercialOutputsBoard';
 
 export default function App() {
   // يبدأ المستخدم من مسار الإدخال حتى لا يخلط الأرقام التجريبية بنتائج متجره.
@@ -158,6 +159,8 @@ export default function App() {
               )}
               {/* Top KPI Summary Row */}
               <TopKpiCards financials={auditResult?.financial_economics} />
+
+              <CommercialOutputsBoard payload={currentPayload} auditResult={auditResult} />
 
               {/* SMART LANDING STATION: FINAL DECISION MATRIX CTA */}
               <div 

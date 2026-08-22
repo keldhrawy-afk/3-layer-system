@@ -399,6 +399,26 @@ export interface BackendSheetData {
   shipping_cost_per_order: number;
   cod_fee_per_order: number;
   confirmation_fee_per_order: number;
+  product_performance?: ProductPerformance[];
+}
+
+export interface ProductPerformance {
+  product_name: string;
+  confirmed_orders: number;
+  revenue?: number;
+  delivered_orders?: number;
+  cancelled_orders?: number;
+  cogs_per_order?: number;
+}
+
+export interface ContentOffer {
+  id: string;
+  title: string;
+  offer_text: string;
+  channel: 'Meta Ads' | 'Messenger' | 'WhatsApp' | 'Instagram';
+  creative_angle?: CreativeAngleCategory;
+  status: 'ACTIVE' | 'PAUSED' | 'DRAFT';
+  ends_at?: string;
 }
 
 export interface ChatSalesData {
@@ -421,6 +441,7 @@ export interface AuditPayload {
   ad_platforms: AdPlatformData[];
   backend_sheet: BackendSheetData;
   chat_data?: ChatSalesData;
+  content_offers?: ContentOffer[];
 }
 
 export interface WeeklySnapshot {

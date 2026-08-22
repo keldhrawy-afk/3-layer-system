@@ -258,6 +258,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       let delivered = 0;
       let cogs = 0;
       let aov = 0;
+      const products = new Map<string, { confirmed_orders: number; revenue: number; delivered_orders: number; cancelled_orders: number }>();
 
       rows.forEach((row) => {
         const findVal = (...keys: string[]) => {
@@ -276,6 +277,17 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         delivered += findVal('deliver', 'مسلم', 'تم التسليم', 'shipped');
         if (!cogs) cogs = findVal('cogs', 'cost per order', 'تكلفة القطعة', 'سعر الجملة');
         if (!aov) aov = findVal('aov', 'average order', 'سعر البيع', 'قيمة الأوردر');
+
+        const productKey = Object.keys(row).find((key) => /product( name)?|item|sku|اسم المنتج|المنتج/i.test(key));
+        const productName = productKey ? String(row[productKey] || '').trim() : '';
+        if (productName) {
+          const product = products.get(productName) || { confirmed_orders: 0, revenue: 0, delivered_orders: 0, cancelled_orders: 0 };
+          product.confirmed_orders += findVal('confirm', 'مؤكد', 'التأكيدات', 'valid');
+          product.revenue += findVal('revenue', 'sales', 'إيراد', 'مبيعات', 'قيمة الطلب');
+          product.delivered_orders += findVal('deliver', 'مسلم', 'تم التسليم', 'shipped');
+          product.cancelled_orders += findVal('cancel', 'fake', 'ملغي', 'فيك', 'مرتجع');
+          products.set(productName, product);
+        }
       });
 
       const updatedBackendSheet: BackendSheetData = {
@@ -287,7 +299,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         average_order_value: aov,
         shipping_cost_per_order: 80,
         cod_fee_per_order: 25,
-        confirmation_fee_per_order: 15
+        confirmation_fee_per_order: 15,
+        product_performance: Array.from(products.entries()).map(([product_name, stats]) => ({ product_name, ...stats }))
       };
 
       setStagedPayload(prev => ({
@@ -478,7 +491,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       content = `Platform,Campaign Name,Impressions,Spend,Clicks,3Sec Views,75Pct Views,Reported Orders,Reported Revenue\nMeta Ads,Summer Sale CBO,450000,48500,9500,125000,22000,145,172500`;
       filename = 'prepilot_ad_platforms_sample.csv';
     } else if (type === 'csv_sheet') {
-      content = `Order ID,Customer Name,Phone Status,Raw Orders,Confirmed Orders,Cancelled Fake Orders,Delivered Orders,COGS Per Order,AOV\n#1001,أحمد علي,Confirmed,233,121,58,98,350,1200`;
+      content = `Order ID,Product Name,Confirmed Orders,Delivered Orders,Cancelled Orders,Revenue,Raw Orders,COGS Per Order,AOV\n#1001,باكدج العناية الكاملة,121,98,58,145200,233,350,1200`;
       filename = 'prepilot_backend_sheet_sample.csv';
     } else {
       content = JSON.stringify(currentPayload, null, 2);
@@ -600,7 +613,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           >
             <div>
               <span className="text-xs font-headline block font-bold">2. شيت الكول سنتر</span>
-              <span className="text-[10px] text-slate-500 font-mono">الطلبات المؤكدة، COGS</span>
+              <span className="text-[10px] text-slate-500 font-mono">الطلبات، COGS، والمنتج</span>
             </div>
             <FileText className={`w-4 h-4 ${activeUploadType === 'backend_sheet' ? 'text-emerald-600' : 'text-slate-400'}`} />
           </button>
