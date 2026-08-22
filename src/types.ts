@@ -381,6 +381,13 @@ export interface AdPlatformData {
   returning_messaging_contacts?: number;
   cost_per_messaging_conversation?: number;
   welcome_messages?: number;
+  post_engagement?: number;
+  post_reactions?: number;
+  post_comments?: number;
+  post_saves?: number;
+  post_shares?: number;
+  photo_clicks?: number;
+  video_plays_at_75?: number;
   spend: number;
   reported_orders: number;
   reported_revenue: number;

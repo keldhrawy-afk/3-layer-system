@@ -204,6 +204,17 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       let total75Pct = 0;
       let totalOrders = 0;
       let totalRev = 0;
+      let totalReach = 0;
+      let totalMessages = 0;
+      let totalNewMessages = 0;
+      let totalReturningMessages = 0;
+      let totalWelcomeMessages = 0;
+      let totalEngagement = 0;
+      let totalReactions = 0;
+      let totalComments = 0;
+      let totalSaves = 0;
+      let totalShares = 0;
+      let totalPhotoClicks = 0;
 
       rows.forEach((row) => {
         const findVal = (...keys: string[]) => {
@@ -223,6 +234,17 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         total75Pct += findVal('75%', '75 percent', 'hold', 'احتفاظ');
         totalOrders += findVal('order', 'conversion', 'purchase', 'طلب', 'المبيعات', 'raw');
         totalRev += findVal('revenue', 'value', 'إيرادات', 'القيمة');
+        totalReach += findVal('reach', 'الوصول');
+        totalMessages += findVal('messaging conversations', 'results', 'conversation started', 'بدء المحادثات');
+        totalNewMessages += findVal('new messaging', 'جهات اتصال جديدة');
+        totalReturningMessages += findVal('returning messaging', 'جهات اتصال عائدة');
+        totalWelcomeMessages += findVal('welcome message', 'رسالة ترحيب');
+        totalEngagement += findVal('post engagement', 'تفاعل المنشور');
+        totalReactions += findVal('post reactions', 'تفاعلات المنشور');
+        totalComments += findVal('post comments', 'تعليقات المنشور');
+        totalSaves += findVal('post saves', 'حفظ المنشور');
+        totalShares += findVal('post shares', 'مشاركات المنشور');
+        totalPhotoClicks += findVal('photo clicks', 'نقرات الصورة');
       });
 
       const updatedAdPlatform: AdPlatformData = {
@@ -234,6 +256,17 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         seventy_five_percent_views: total75Pct,
         reported_orders: totalOrders,
         reported_revenue: totalRev,
+        reach: totalReach || undefined,
+        messaging_conversations_started: totalMessages || undefined,
+        new_messaging_contacts: totalNewMessages || undefined,
+        returning_messaging_contacts: totalReturningMessages || undefined,
+        welcome_messages: totalWelcomeMessages || undefined,
+        post_engagement: totalEngagement || undefined,
+        post_reactions: totalReactions || undefined,
+        post_comments: totalComments || undefined,
+        post_saves: totalSaves || undefined,
+        post_shares: totalShares || undefined,
+        photo_clicks: totalPhotoClicks || undefined,
         campaign_age_hours: 120,
         budget_scaled_24h_pct: 10
       };

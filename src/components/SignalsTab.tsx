@@ -14,6 +14,15 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
   const { ad_platforms } = payload;
   const metrics = auditResult.raw_calculated_metrics || {};
   const layer1 = auditResult.layer1_diagnostic;
+  const meta = ad_platforms[0];
+  const allCtr = meta?.impressions ? ((meta.clicks / meta.impressions) * 100).toFixed(2) : '0.00';
+  const allCpc = meta?.clicks ? (meta.spend / meta.clicks).toFixed(2) : '0.00';
+  const metaMetricGroups = [
+    { title: 'Delivery & Budget', items: [['Amount spent', `${meta?.spend?.toLocaleString() || 0} ج.م`], ['Budget', `${meta?.budget?.toLocaleString() || '—'} ج.م`], ['Reach', (meta?.reach || 0).toLocaleString()], ['Impressions', (meta?.impressions || 0).toLocaleString()], ['Frequency', `${meta?.frequency ?? layer1?.frequency ?? 0}`], ['CPM', `${meta?.cpm ?? layer1?.cpm ?? 0} ج.م`]] },
+    { title: 'Messaging Results', items: [['Results / Purchases', (meta?.reported_orders || 0).toLocaleString()], ['Cost per result', `${layer1?.cost_per_result ?? layer1?.cost_per_message ?? 0} ج.م`], ['Messaging conversations', (meta?.messaging_conversations_started ?? layer1?.messaging_conversations_started ?? 0).toLocaleString()], ['Cost per messaging', `${layer1?.cost_per_messaging_conversation ?? layer1?.cost_per_message ?? 0} ج.م`], ['Messaging contacts', (layer1?.messaging_contacts ?? meta?.messaging_conversations_started ?? 0).toLocaleString()], ['New messaging', (meta?.new_messaging_contacts ?? layer1?.new_messaging_contacts ?? 0).toLocaleString()], ['Returning messaging', (meta?.returning_messaging_contacts ?? layer1?.returning_messaging_contacts ?? 0).toLocaleString()], ['Welcome messages', (meta?.welcome_messages || 0).toLocaleString()]] },
+    { title: 'Click & Creative', items: [['Clicks (all)', (meta?.clicks || 0).toLocaleString()], ['CTR (all)', `${allCtr}%`], ['CPC (all)', `${allCpc} ج.م`], ['3-second video plays', (meta?.three_sec_views || 0).toLocaleString()], ['Video plays at 75%', (meta?.seventy_five_percent_views || 0).toLocaleString()], ['Hook Rate', `${layer1?.hook_rate ?? 0}%`], ['CTR (link / outbound)', `${layer1?.outbound_ctr ?? 0}%`]] },
+    { title: 'Content Engagement', items: [['Post engagement', (meta?.post_engagement || 0).toLocaleString()], ['Post reactions', (meta?.post_reactions || 0).toLocaleString()], ['Post comments', (meta?.post_comments || 0).toLocaleString()], ['Post saves', (meta?.post_saves || 0).toLocaleString()], ['Post shares', (meta?.post_shares || 0).toLocaleString()], ['Photo clicks', (meta?.photo_clicks || 0).toLocaleString()]] }
+  ];
 
   const [levelMode, setLevelMode] = useState<'campaign' | 'adset' | 'creative'>('campaign');
 
@@ -116,6 +125,10 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
+        {metaMetricGroups.map((group) => <section key={group.title} className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs"><h3 className="mb-3 text-xs font-black text-slate-900 font-headline">{group.title}</h3><div className="grid grid-cols-2 md:grid-cols-3 gap-2">{group.items.map(([label, value]) => <div key={label} className="rounded-lg border border-slate-100 bg-slate-50 p-2"><span className="block text-[9px] leading-tight text-slate-500">{label}</span><strong className="mt-1 block truncate text-xs font-mono text-slate-900">{value}</strong></div>)}</div></section>)}
       </div>
 
       {/* 3-LINE EXECUTIVE DIAGNOSTIC NOTE CARD */}
@@ -614,4 +627,3 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
     </div>
   );
 };
-
