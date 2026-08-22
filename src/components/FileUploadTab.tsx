@@ -589,11 +589,14 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   };
 
   // Trigger Audit with current staged payload
+  const hasAdData = uploadedSources.adPlatform && stagedPayload.ad_platforms.some(platform => (platform.spend || 0) > 0 && (platform.impressions || 0) > 0 && (platform.clicks || 0) > 0);
+  const hasBackendData = uploadedSources.backend && (stagedPayload.backend_sheet.raw_orders || 0) > 0
+    && (stagedPayload.backend_sheet.confirmed_orders || 0) > 0
+    && (stagedPayload.backend_sheet.cogs_per_order || 0) > 0
+    && (stagedPayload.backend_sheet.average_order_value || 0) > 0;
   const missingRequirements = [
-    !uploadedSources.adPlatform && 'تقرير الإعلانات: الصرف والظهور والكليكات',
-    !uploadedSources.backend && 'شيت الـCRM: الطلبات والمؤكد وCOGS وAOV',
-    !periodStart && 'تاريخ بداية الفترة',
-    !periodEnd && 'تاريخ نهاية الفترة',
+    !hasAdData && 'تقرير الإعلانات: الصرف والظهور والكليكات',
+    !hasBackendData && 'شيت الـCRM: الطلبات والمؤكد وCOGS وAOV',
     periodStart && periodEnd && periodStart > periodEnd && 'ترتيب تاريخ الفترة'
   ].filter(Boolean) as string[];
   const canRunAudit = missingRequirements.length === 0;
@@ -1156,7 +1159,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             onClick={handleExecuteAudit}
             disabled={!canRunAudit}
             title={!canRunAudit ? `استكمل: ${missingRequirements.join('، ')}` : undefined}
-            className="mp-primary flex items-center gap-2 px-6 py-3 rounded-xl font-headline font-bold text-xs transition-all cursor-pointer active:scale-95 uppercase disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none"
+            className="mp-primary flex items-center gap-2 px-6 py-3 rounded-xl font-headline font-bold text-xs transition-all cursor-pointer active:scale-95 uppercase disabled:cursor-not-allowed disabled:!bg-slate-200 disabled:!text-slate-500 disabled:opacity-70 disabled:shadow-none"
           >
             <Zap className="w-4 h-4 fill-current text-white" />
             <span>ابدأ التحليل في كل الـLayers</span>
@@ -1169,6 +1172,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             <strong>قبل تشغيل التشخيص:</strong> {missingRequirements.join('، ')}.
           </div>
         )}
+
+        {canRunAudit && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900">جاهز: اضغط الزر لتمرير الداتا الحالية إلى كل الـLayers وعرض النتيجة. الفترة اختيارية، لكن استخدامها يحسّن دقة المقارنة.</div>}
 
         {auditCompleted && (
           <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
