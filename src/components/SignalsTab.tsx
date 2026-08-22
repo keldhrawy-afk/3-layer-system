@@ -60,23 +60,23 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
   return (
     <div className="space-y-6 text-slate-900 font-sans" dir="rtl">
       {/* LAYER 1 HEADER & SYSTEM ROLE */}
-      <div className="bg-slate-900 text-white rounded-xl p-6 shadow-md border border-slate-800 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500" />
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+      <div className="mp-hero-surface rounded-[1.5rem] p-6 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#6d45ff] via-[#a487ff] to-[#d4c6ff]" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#e3ddf1] pb-4 mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-[#e7e0ff] text-[#4d2bc5] border border-[#cfc1ff]">
                 Layer 1: Marketing / Meta Ads
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-white/80 text-[#635b70] border border-[#e1dbf2]">
                 Messenger • WhatsApp • Instagram
               </span>
             </div>
-            <h1 className="text-lg md:text-xl font-bold font-headline tracking-tight text-white flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-emerald-400" />
+            <h1 className="text-lg md:text-xl font-bold font-headline tracking-tight text-[#20123a] flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-[#6d45ff]" />
               <span>الطبقة الأولى: محلل أداء إعلانات الرسائل (Pre-Click Specialist)</span>
             </h1>
-            <p className="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
+            <p className="text-xs text-[#716b7d] mt-1 max-w-3xl leading-relaxed">
               مهمة النظام: استقبال داتا الداشبورد من ميتا، تحليل العلاقة بين الماتريكس (ربط الأرقام ببعضها)، وتحديد مكان التسريب (Leak) بالضبط قبل ما العميل يفتح الشات، مع تقديم قرار تنفيذي واضح خلال 24 ساعة.
             </p>
           </div>
@@ -84,7 +84,7 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
           <div className={`px-4 py-3 rounded-lg border flex items-center gap-3 shrink-0 ${lightInfo.bg}`}>
             <span className={`w-3.5 h-3.5 rounded-full ${lightInfo.dot} animate-pulse shrink-0`} />
             <div>
-              <span className="text-[10px] text-slate-300 block font-headline">حالة الإعلان التنفيذية (Decision Light)</span>
+              <span className="text-[10px] text-[#716b7d] block font-headline">حالة الإعلان التنفيذية (Decision Light)</span>
               <span className="text-xs font-bold font-headline">{lightInfo.label}</span>
             </div>
           </div>
@@ -92,25 +92,25 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
 
         {/* 24-HOUR EXECUTIVE ACTION OUTPUT */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-slate-800/80 border border-slate-700/80 rounded-lg p-4 space-y-2">
-            <span className="text-[11px] font-bold text-slate-300 font-headline uppercase flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-emerald-400" />
+          <div className="mp-subtle-card rounded-xl p-4 space-y-2">
+            <span className="text-[11px] font-bold text-[#4b4356] font-headline uppercase flex items-center gap-1.5">
+              <Target className="w-4 h-4 text-[#6d45ff]" />
               <span>مكان التسريب بالضبط (Leak Location)</span>
             </span>
             <div className="text-sm font-bold text-amber-300 font-headline bg-amber-500/10 p-2.5 rounded border border-amber-500/20">
               {layer1?.leak_location || 'لم يتم اكتشاف تسريب في مرحلة ما قبل النقرة'}
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[#625b6d] leading-relaxed">
               {layer1?.diagnosis_details}
             </p>
           </div>
 
-          <div className="bg-slate-800/80 border border-slate-700/80 rounded-lg p-4 space-y-2">
-            <span className="text-[11px] font-bold text-slate-300 font-headline uppercase flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-yellow-400" />
+          <div className="mp-subtle-card rounded-xl p-4 space-y-2">
+            <span className="text-[11px] font-bold text-[#4b4356] font-headline uppercase flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-[#8a63ff]" />
               <span>التوصية المباشرة للميديا باير (24-Hour Action Plan)</span>
             </span>
-            <div className="text-xs text-slate-100 font-medium bg-emerald-500/10 p-2.5 rounded border border-emerald-500/20 leading-relaxed">
+            <div className="text-xs text-[#3f3750] font-medium bg-[#f0edff] p-2.5 rounded border border-[#ddd5ff] leading-relaxed">
               {layer1?.action_plan_24h}
             </div>
           </div>
@@ -611,6 +611,5 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
     </div>
   );
 };
-
 
 

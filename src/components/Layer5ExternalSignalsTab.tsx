@@ -249,11 +249,11 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
     <div id="layer5-external-signals-container" className="space-y-6 text-slate-900 font-sans dir-rtl" dir="rtl">
       
       {/* LAYER 5 TOP EXECUTIVE BANNER */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 md:p-7 shadow-md border border-slate-800 relative overflow-hidden space-y-6">
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-indigo-500 to-emerald-500" />
+      <div className="mp-decision-hero text-white rounded-[1.5rem] p-6 md:p-7 relative overflow-hidden space-y-6">
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#d6c8ff] via-white to-[#b9a5ff]" />
         
         {/* Header Title & Tags */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/15 pb-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
@@ -274,7 +274,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
           </div>
 
           {/* Ad-Kill Ban Protection Status Card */}
-          <div className="bg-slate-800/90 border border-amber-500/40 rounded-xl p-4 shrink-0 flex items-center gap-3.5 shadow-lg min-w-[260px]">
+          <div className="bg-white/10 border border-white/20 rounded-xl p-4 shrink-0 flex items-center gap-3.5 shadow-lg min-w-[260px]">
             <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
@@ -295,7 +295,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
         {/* Real-Time External Status Indicators Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           {/* Card 1: Payday & Liquidity */}
-          <div className="bg-slate-800/70 border border-slate-700/80 rounded-xl p-3.5 space-y-1.5">
+          <div className="bg-white/10 border border-white/15 rounded-xl p-3.5 space-y-1.5">
             <div className="flex items-center justify-between text-slate-400">
               <span className="font-headline font-bold flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-indigo-400" />
@@ -312,7 +312,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
           </div>
 
           {/* Card 2: Competitor Radar */}
-          <div className="bg-slate-800/70 border border-slate-700/80 rounded-xl p-3.5 space-y-1.5">
+          <div className="bg-white/10 border border-white/15 rounded-xl p-3.5 space-y-1.5">
             <div className="flex items-center justify-between text-slate-400">
               <span className="font-headline font-bold flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5 text-blue-400" />
@@ -329,7 +329,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
           </div>
 
           {/* Card 3: Inventory & Logistics */}
-          <div className="bg-slate-800/70 border border-slate-700/80 rounded-xl p-3.5 space-y-1.5">
+          <div className="bg-white/10 border border-white/15 rounded-xl p-3.5 space-y-1.5">
             <div className="flex items-center justify-between text-slate-400">
               <span className="font-headline font-bold flex items-center gap-1.5">
                 <Package className="w-3.5 h-3.5 text-emerald-400" />
@@ -346,7 +346,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
           </div>
 
           {/* Card 4: Technical & SLA Speed */}
-          <div className="bg-slate-800/70 border border-slate-700/80 rounded-xl p-3.5 space-y-1.5">
+          <div className="bg-white/10 border border-white/15 rounded-xl p-3.5 space-y-1.5">
             <div className="flex items-center justify-between text-slate-400">
               <span className="font-headline font-bold flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-purple-400" />
@@ -657,8 +657,8 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
       </div>
 
       {/* SECTION 3: EXECUTIVE SUMMARY & 24H ACTION MATRIX */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800 space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+      <div className="mp-decision-hero text-white rounded-[1.5rem] p-6 shadow-md space-y-4">
+        <div className="flex items-center gap-2 border-b border-white/15 pb-3">
           <FileText className="w-5 h-5 text-emerald-400" />
           <h3 className="text-base font-bold font-headline text-white">
             خطة العمل الموحدة لـ 24 ساعة (Unified 24h Action Protocol)
@@ -666,7 +666,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-sans">
-          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+          <div className="bg-white/10 p-4 rounded-xl border border-white/15 space-y-2">
             <div className="flex items-center gap-2 text-indigo-400 font-bold font-headline text-xs">
               <Briefcase className="w-4 h-4" />
               <span>مهام الميديا باير (Media Buyer)</span>
@@ -679,7 +679,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
             </ul>
           </div>
 
-          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+          <div className="bg-white/10 p-4 rounded-xl border border-white/15 space-y-2">
             <div className="flex items-center gap-2 text-emerald-400 font-bold font-headline text-xs">
               <Users className="w-4 h-4" />
               <span>مهام سيلز الشات (Chat Sales Team)</span>
@@ -692,7 +692,7 @@ export const Layer5ExternalSignalsTab: React.FC<Layer5ExternalSignalsTabProps> =
             </ul>
           </div>
 
-          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+          <div className="bg-white/10 p-4 rounded-xl border border-white/15 space-y-2">
             <div className="flex items-center gap-2 text-purple-400 font-bold font-headline text-xs">
               <Truck className="w-4 h-4" />
               <span>مهام العمليات واللوجستيات (Operations)</span>

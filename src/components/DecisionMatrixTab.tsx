@@ -314,52 +314,51 @@ export const DecisionMatrixTab: React.FC<DecisionMatrixTabProps> = ({ payload, a
       )}
 
       {/* HEADER: SMART LANDING STATION (محطة الهبوط الذكية) */}
-      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border-2 border-emerald-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+      <div className="mp-decision-hero text-white rounded-[1.5rem] p-6 md:p-7 relative overflow-hidden">
         {/* Glow Spheres */}
-        <div className="absolute top-0 -left-20 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 -right-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 -left-20 w-80 h-80 bg-[#b9a5ff]/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 -right-20 w-80 h-80 bg-[#e6dcff]/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3.5 py-1 rounded-full text-xs font-black font-mono bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-md shadow-emerald-500/20">
+              <span className="px-3.5 py-1 rounded-full text-xs font-black font-mono bg-white text-[#4d2bc5] shadow-md shadow-[#20123a]/20">
                 ⚡ COMMAND CENTER & ACTION MATRIX
               </span>
-              <span className="px-3 py-1 rounded-full text-[11px] font-bold font-mono bg-indigo-500/25 text-indigo-200 border border-indigo-400/40">
+              <span className="px-3 py-1 rounded-full text-[11px] font-bold font-mono bg-white/10 text-white border border-white/20">
                 🎯 3-LAYER SYNTHESIS
               </span>
-              <span className="px-3 py-1 rounded-full text-[11px] font-bold font-mono bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              <span className="px-3 py-1 rounded-full text-[11px] font-bold font-mono bg-[#f9edc9]/15 text-[#fff0b8] border border-[#f9edc9]/30">
                 🛡️ ACTIVE GUARDRAILS
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white font-headline flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-emerald-500/30">
+              <div className="w-10 h-10 rounded-xl bg-white text-[#6d45ff] flex items-center justify-center font-bold shadow-lg shadow-[#20123a]/20">
                 <CheckSquare className="w-6 h-6" />
               </div>
-              <span className="bg-gradient-to-r from-white via-slate-100 to-emerald-200 bg-clip-text text-transparent">
+              <span>
                 مصفوفة القرارات النهائية (Final Decision Matrix)
               </span>
             </h1>
             <p className="text-xs md:text-sm text-slate-300 leading-relaxed font-medium">
-              محطة الهبوط الذكية التي تجمع مخرجات كافة الـ Layers وتحولها لقرارات تنفيذية ملونة وفورية تجيبك بوضوح: <span className="text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">"أنا كـ Media Buyer أو Business Owner، أعمل إيه حالا بالظبط؟"</span>
+              محطة الهبوط الذكية التي تجمع مخرجات كافة الـ Layers وتحولها لقرارات تنفيذية ملونة وفورية تجيبك بوضوح: <span className="text-white font-bold bg-white/10 px-2 py-0.5 rounded border border-white/20">"أنا كـ Media Buyer أو Business Owner، أعمل إيه حالا بالظبط؟"</span>
             </p>
           </div>
 
           {/* Quick Metrics Flash & Bulk Action */}
           <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 bg-gradient-to-br from-emerald-950/70 to-slate-900/90 border border-emerald-500/40 rounded-xl shadow-lg relative overflow-hidden">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2.5 left-2.5 animate-pulse" />
-                <span className="text-[11px] text-emerald-300 font-bold block font-headline">أرباح وإيرادات مستهدفة</span>
-                <span className="text-lg font-black font-mono text-emerald-400 block mt-0.5">
+              <div className="p-3.5 bg-white/10 border border-white/20 rounded-xl shadow-lg relative overflow-hidden">
+                <div className="w-2 h-2 rounded-full bg-[#c9b8ff] absolute top-2.5 left-2.5 animate-pulse" />
+                <span className="text-[11px] text-[#eee8ff] font-bold block font-headline">أرباح وإيرادات مستهدفة</span>
+                <span className="text-lg font-black font-mono text-white block mt-0.5">
                   +{totalAddedProfit.toLocaleString()} ج.م
                 </span>
               </div>
-              <div className="p-3.5 bg-gradient-to-br from-rose-950/70 to-slate-900/90 border border-rose-500/40 rounded-xl shadow-lg relative overflow-hidden">
-                <div className="w-2 h-2 rounded-full bg-rose-400 absolute top-2.5 left-2.5" />
-                <span className="text-[11px] text-rose-300 font-bold block font-headline">هدر محمي بالـ Guardrails</span>
-                <span className="text-lg font-black font-mono text-rose-400 block mt-0.5">
+              <div className="p-3.5 bg-white/10 border border-white/20 rounded-xl shadow-lg relative overflow-hidden">
+                <div className="w-2 h-2 rounded-full bg-[#ffcfda] absolute top-2.5 left-2.5" />
+                <span className="text-[11px] text-[#fce4ea] font-bold block font-headline">هدر محمي بالـ Guardrails</span>
+                <span className="text-lg font-black font-mono text-white block mt-0.5">
                   -{totalSavedWaste.toLocaleString()} ج.م
                 </span>
               </div>
@@ -370,8 +369,8 @@ export const DecisionMatrixTab: React.FC<DecisionMatrixTabProps> = ({ payload, a
               disabled={isExecutingId === 'ALL' || bulkExecuted}
               className={`w-full py-3 px-4 rounded-xl font-black text-xs font-headline flex items-center justify-center gap-2 transition-all shadow-xl ${
                 bulkExecuted
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white cursor-default border border-emerald-400/40'
-                  : 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 text-slate-950 active:scale-95 shadow-emerald-500/25 border border-emerald-300'
+                  ? 'bg-white/20 text-white cursor-default border border-white/30'
+                  : 'bg-white hover:bg-[#f1edff] text-[#4d2bc5] active:scale-95 shadow-[#20123a]/25 border border-white'
               }`}
             >
               {isExecutingId === 'ALL' ? (
@@ -396,18 +395,18 @@ export const DecisionMatrixTab: React.FC<DecisionMatrixTabProps> = ({ payload, a
       </div>
 
       {/* FILTER & SEARCH BAR */}
-      <div className="bg-slate-900/95 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
+      <div className="mp-decision-filter rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-[#20123a]">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-300 font-headline ml-1 flex items-center gap-1.5">
-            <Filter className="w-4 h-4 text-emerald-400" />
+          <span className="text-xs font-bold text-[#625b6d] font-headline ml-1 flex items-center gap-1.5">
+            <Filter className="w-4 h-4 text-[#6d45ff]" />
             <span>فلترة القرارات:</span>
           </span>
           <button
             onClick={() => setFilterType('ALL')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold font-headline transition-all ${
               filterType === 'ALL'
-                ? 'bg-white text-slate-950 shadow-md ring-2 ring-emerald-400'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                ? 'bg-[#6d45ff] text-white shadow-md ring-2 ring-[#cbbcff]'
+                : 'bg-[#f5f2fb] text-[#625b6d] hover:bg-[#ece7f7]'
             }`}
           >
             الكل ({initialDecisions.length})
@@ -466,7 +465,7 @@ export const DecisionMatrixTab: React.FC<DecisionMatrixTabProps> = ({ payload, a
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="بحث في الكيان، التشخيص، أو القرار..."
-            className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pr-9 pl-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 font-sans"
+            className="w-full bg-[#fbfaff] border border-[#ded7ec] rounded-xl pr-9 pl-3 py-2 text-xs text-[#20123a] placeholder-[#938b9f] focus:outline-none focus:ring-2 focus:ring-[#a78bfa] font-sans"
           />
         </div>
       </div>

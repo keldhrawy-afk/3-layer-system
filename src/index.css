@@ -57,6 +57,32 @@
   letter-spacing: -0.03em;
 }
 
+/* Surfaces used by the diagnostic screens. Keep the product calm and reserve
+   saturated colours for actual status or decisions, not entire page sections. */
+.mp-hero-surface {
+  background: linear-gradient(135deg, #ffffff 0%, #f3f0ff 58%, #ece7ff 100%);
+  border: 1px solid #ddd5ff;
+  box-shadow: 0 14px 34px rgba(57, 36, 100, 0.08);
+}
+
+.mp-subtle-card {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #e1dbf2;
+  box-shadow: none;
+}
+
+.mp-decision-hero {
+  background: linear-gradient(135deg, #26164a 0%, #42238d 58%, #6d45ff 145%);
+  border: 1px solid #7e5dff;
+  box-shadow: 0 18px 42px rgba(57, 36, 100, 0.18);
+}
+
+.mp-decision-filter {
+  background: #ffffff;
+  border: 1px solid #e1dbf2;
+  box-shadow: 0 10px 24px rgba(57, 36, 100, 0.06);
+}
+
 .glow-emerald {
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
 }
