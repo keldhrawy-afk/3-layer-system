@@ -50,6 +50,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const [activeUploadType, setActiveUploadType] = useState<'ad_platform' | 'image_creative' | 'chat_screenshots' | 'direct_text'>('direct_text');
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [uploadedDataFiles, setUploadedDataFiles] = useState<string[]>([]);
   const [fileStatus, setFileStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   
   // Direct text input state
@@ -157,6 +158,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       reader.readAsDataURL(file);
       return;
     }
+
+    setUploadedDataFiles(previous => previous.includes(file.name) ? previous : [...previous, file.name]);
 
     if (ext === 'json') {
       const reader = new FileReader();
@@ -585,7 +588,18 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       setSystemMemoryNotes(nextMemory);
       window.localStorage.setItem(SYSTEM_MEMORY_STORAGE_KEY, JSON.stringify(nextMemory));
     }
-    const payloadWithMemory = { ...stagedPayload, system_memory_notes: nextMemory };
+    const payloadWithMemory = {
+      ...stagedPayload,
+      system_memory_notes: nextMemory,
+      analysis_inputs: {
+        run_at: new Date().toISOString(),
+        data_files: uploadedDataFiles,
+        creative_images: creativeImages.map(image => image.name),
+        chat_images: chatScreenshots.map(image => image.name),
+        has_text: Boolean(directTextInput.trim()),
+        has_note: Boolean(stagedPayload.data_context_note?.trim())
+      }
+    };
     setStagedPayload(payloadWithMemory);
     const result = run5LayerAudit(payloadWithMemory);
     onAuditExecute(payloadWithMemory, result);
@@ -602,6 +616,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
     setStagedPayload(previous => source === 'adPlatform' ? { ...previous, ad_platforms: [] } : { ...previous, backend_sheet: emptyBackendSheet, chat_data: undefined });
     setParsedRowsPreview(null);
     setFileName(null);
+    setUploadedDataFiles([]);
     setAuditCompleted(false);
     setFileStatus({ type: 'info', message: source === 'adPlatform' ? 'تم حذف تقرير الإعلانات من جلسة التحليل.' : 'تم حذف شيت المبيعات وبيانات الـCRM من جلسة التحليل.' });
   };
@@ -611,7 +626,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
     hasBackendSheetRef.current = false;
     setStagedPayload({ store_name: currentPayload.store_name, currency: currentPayload.currency, timeframe: currentPayload.timeframe, ad_platforms: [], backend_sheet: emptyBackendSheet, data_context_note: '', system_memory_notes: systemMemoryNotes });
     setUploadedSources({ adPlatform: false, backend: false });
-    setFileName(null); setParsedRowsPreview(null); setCreativeImages([]); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
+    setFileName(null); setUploadedDataFiles([]); setParsedRowsPreview(null); setCreativeImages([]); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
     setFileStatus({ type: 'info', message: 'تم مسح كل المدخلات من جلسة التحليل الحالية. ذاكرة النظام المحفوظة لم تتأثر.' });
   };
 

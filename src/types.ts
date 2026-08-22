@@ -363,6 +363,7 @@ export interface AuditResult {
   data_context_note?: string;
   /** Explicitly saved, browser-local operating context supplied by the user. */
   system_memory_notes?: string[];
+  analysis_inputs?: AnalysisInputSummary;
   raw_calculated_metrics?: Record<string, number | string>;
 }
 
@@ -475,6 +476,16 @@ export interface AuditPayload {
   data_context_note?: string;
   /** Notes the user explicitly chose to retain for future uploads on this browser. */
   system_memory_notes?: string[];
+  analysis_inputs?: AnalysisInputSummary;
+}
+
+export interface AnalysisInputSummary {
+  run_at: string;
+  data_files: string[];
+  creative_images: string[];
+  chat_images: string[];
+  has_text: boolean;
+  has_note: boolean;
 }
 
 export interface WeeklySnapshot {

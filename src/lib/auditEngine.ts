@@ -489,13 +489,13 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
 
   // Layer 2 Core Dynamic Calculations & Rules
   const chatData: Partial<ChatSalesData> = payload.chat_data || {};
-  const metaTotalSpend = totalSpend || 48650;
-  const metaOutboundClicksCount = totalOutboundClicks || 1710;
-  const actualReceivedChats = chatData.actual_received_chats ?? (totalMessages || 1308);
-  const avgFrtMinutes = chatData.average_frt_minutes ?? 18.5;
-  const qualifiedLeadsCount = chatData.qualified_leads_count ?? 860;
-  const closedOrdersCount = chatData.closed_orders_count ?? (confirmedOrders || 145);
-  const followupClosedOrders = chatData.followup_closed_orders ?? 3;
+  const metaTotalSpend = totalSpend;
+  const metaOutboundClicksCount = totalOutboundClicks;
+  const actualReceivedChats = chatData.actual_received_chats ?? totalMessages;
+  const avgFrtMinutes = chatData.average_frt_minutes ?? 0;
+  const qualifiedLeadsCount = chatData.qualified_leads_count ?? 0;
+  const closedOrdersCount = chatData.closed_orders_count ?? confirmedOrders;
+  const followupClosedOrders = chatData.followup_closed_orders ?? 0;
 
   // 1. Click-to-Chat Rate = (Actual_CRM_Chats / Meta_Outbound_Clicks) * 100
   const calcClickToChatRate = Number(((actualReceivedChats / Math.max(1, metaOutboundClicksCount)) * 100).toFixed(1));
@@ -520,13 +520,13 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
   const vbpStatus = vbpScorePct >= 80 ? 'OPTIMAL' : vbpScorePct >= 50 ? 'BELOW_BENCHMARK' : 'CRITICAL';
 
   // 7. AOV (Average Order Value) & Upselling / Cross-selling Calculations
-  const totalSalesRevenue = (payload.backend_sheet?.average_order_value || 650) * closedOrdersCount;
+  const totalSalesRevenue = (payload.backend_sheet?.average_order_value || 0) * closedOrdersCount;
   const calculatedAov = Number((totalSalesRevenue / Math.max(1, closedOrdersCount)).toFixed(0));
   const upsellAttemptsCount = chatData.upsell_attempts_count ?? Math.round(closedOrdersCount * 0.35);
   const upsellAttemptsRate = Number(((upsellAttemptsCount / Math.max(1, closedOrdersCount)) * 100).toFixed(1));
   const crossSellAttemptsCount = chatData.cross_sell_attempts_count ?? Math.round(closedOrdersCount * 0.28);
   const crossSellAttemptsRate = Number(((crossSellAttemptsCount / Math.max(1, closedOrdersCount)) * 100).toFixed(1));
-  const singleProductOrdersWithoutUpsell = chatData.single_product_orders_no_upsell ?? 48;
+  const singleProductOrdersWithoutUpsell = chatData.single_product_orders_no_upsell ?? 0;
   const singleProductNoUpsellFlag = singleProductOrdersWithoutUpsell > 0;
 
   // 8. FRT Status = Average_FRT_Minutes
@@ -560,6 +560,7 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
     diagnosis_summary: summary,
     data_context_note: payload.data_context_note?.trim() || undefined,
     system_memory_notes: payload.system_memory_notes?.filter(Boolean) || [],
+    analysis_inputs: payload.analysis_inputs,
     funnel_leak_location: leakLocation,
     layer1_diagnostic: {
       decision_light: layer1Light,
@@ -739,28 +740,28 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
         }
       ],
       chat_micro_funnel: {
-        total_incoming_messages: totalMessages || 1710,
-        greeting_responded_customers: Math.round((totalMessages || 1710) * 0.772),
+        total_incoming_messages: actualReceivedChats,
+        greeting_responded_customers: Math.round(actualReceivedChats * 0.772),
         greeting_engagement_rate: 77.2,
-        interactive_customers: Math.round((totalMessages || 1710) * 0.772),
-        price_inquiry_customers: Math.round((totalMessages || 1710) * 0.772 * 0.773),
+        interactive_customers: Math.round(actualReceivedChats * 0.772),
+        price_inquiry_customers: Math.round(actualReceivedChats * 0.772 * 0.773),
         price_inquiry_rate: 77.3,
-        serious_qualified_customers: Math.round((totalMessages || 1710) * 0.772 * 0.773 * 0.85),
-        offer_reached_customers: Math.round((totalMessages || 1710) * 0.772 * 0.773 * 0.85 * 0.667),
+        serious_qualified_customers: Math.round(actualReceivedChats * 0.772 * 0.773 * 0.85),
+        offer_reached_customers: Math.round(actualReceivedChats * 0.772 * 0.773 * 0.85 * 0.667),
         offer_dropped_rate: 66.7,
-        shipping_info_provided_customers: Math.round((totalMessages || 1710) * 0.772 * 0.773 * 0.85 * 0.667 * 0.46),
-        closed_orders: confirmedOrders || 145,
+        shipping_info_provided_customers: Math.round(actualReceivedChats * 0.772 * 0.773 * 0.85 * 0.667 * 0.46),
+        closed_orders: closedOrdersCount,
         checkout_intent_rate: 69.0,
         checkout_intent_drop: 31.0
       },
       time_decay_sla: {
-        total_chats: totalMessages || 1710,
-        delayed_chats_over_15m: Math.round((totalMessages || 1710) * 0.24),
+        total_chats: actualReceivedChats,
+        delayed_chats_over_15m: Math.round(actualReceivedChats * 0.24),
         sla_breach_rate: 24.0,
-        avg_frt_minutes: 18.5,
+        avg_frt_minutes: avgFrtMinutes,
         decay_category: '50%_DECAY',
         potential_conversion_percentage: 50.0,
-        dead_leads_count: Math.round((totalMessages || 1710) * 0.14)
+        dead_leads_count: Math.round(actualReceivedChats * 0.14)
       },
       sales_rep_variance: {
         reps: [

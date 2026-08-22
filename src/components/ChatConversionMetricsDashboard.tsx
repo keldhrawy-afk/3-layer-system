@@ -49,9 +49,9 @@ export const ChatConversionMetricsDashboard: React.FC<ChatConversionMetricsDashb
 
   // Extract core numbers
   const chatData = payload.chat_data || {};
-  const actualReceivedChats = chatData.actual_received_chats ?? 1308;
-  const qualifiedLeadsCount = chatData.qualified_leads_count ?? 860;
-  const closedOrdersCount = chatData.closed_orders_count ?? payload.backend_sheet.confirmed_orders ?? 121;
+  const actualReceivedChats = chatData.actual_received_chats ?? 0;
+  const qualifiedLeadsCount = chatData.qualified_leads_count ?? 0;
+  const closedOrdersCount = chatData.closed_orders_count ?? payload.backend_sheet.confirmed_orders ?? 0;
 
   // Exact math calculations
   const qualifiedRate = Number(((qualifiedLeadsCount / Math.max(1, actualReceivedChats)) * 100).toFixed(1));

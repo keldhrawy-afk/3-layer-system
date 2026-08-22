@@ -35,10 +35,10 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
   const l2 = auditResult.layer2_diagnostic;
   const { backend_sheet } = payload;
 
-  const rawOrders = backend_sheet.raw_orders || 210;
-  const confirmed = backend_sheet.confirmed_orders || 145;
-  const cancelled = backend_sheet.cancelled_fake_orders || 40;
-  const delivered = backend_sheet.delivered_orders || 120;
+  const rawOrders = backend_sheet.raw_orders || 0;
+  const confirmed = backend_sheet.confirmed_orders || 0;
+  const cancelled = backend_sheet.cancelled_fake_orders || 0;
+  const delivered = backend_sheet.delivered_orders || 0;
 
   // Defaults if l2 is pending
   const chatKpis: Layer2ChatKpi[] = l2?.chat_kpis || [
@@ -348,7 +348,7 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-center text-xs">
             <div className="px-3 py-1 border-l border-slate-200">
               <span className="text-[10px] text-slate-500 block font-medium">إجمالي الشاتات المستقبلة</span>
-              <strong className="text-slate-900 font-mono text-sm font-extrabold">{(payload.chat_data?.actual_received_chats || 1308).toLocaleString()}</strong>
+              <strong className="text-slate-900 font-mono text-sm font-extrabold">{(payload.chat_data?.actual_received_chats || 0).toLocaleString()}</strong>
             </div>
             <div className="px-3 py-1 border-l border-slate-200">
               <span className="text-[10px] text-slate-500 block font-medium">الرقم 1: Qualified Rate</span>

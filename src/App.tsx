@@ -181,6 +181,11 @@ export default function App() {
       />
 
       {shareFeedback && <div className="border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs font-bold text-emerald-900" dir="rtl">{shareFeedback}</div>}
+      {hasLiveData && auditResult.analysis_inputs && (
+        <div className="border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-center text-[11px] font-bold text-indigo-900" dir="rtl">
+          آخر Run: {new Date(auditResult.analysis_inputs.run_at).toLocaleString('ar-EG')} — ملفات: {auditResult.analysis_inputs.data_files.length} • صور: {auditResult.analysis_inputs.creative_images.length + auditResult.analysis_inputs.chat_images.length} • نص: {auditResult.analysis_inputs.has_text ? 'نعم' : 'لا'} • ملحوظة: {auditResult.analysis_inputs.has_note ? 'نعم' : 'لا'}
+        </div>
+      )}
 
       {/* Main Workspace Body */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
