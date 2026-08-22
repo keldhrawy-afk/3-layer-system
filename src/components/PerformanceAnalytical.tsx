@@ -23,6 +23,7 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
   const evidence = isLayer1
     ? `Hook ${l1?.hook_rate ?? 0}% • Hold ${l1?.hold_rate ?? 0}% • CTR ${l1?.outbound_ctr ?? 0}% • Click→Chat ${l1?.click_to_message_rate ?? 0}%`
     : `Qualified ${(l2?.chat_kpis || []).find(k => k.id === 'kpi_qualified_rate')?.value ?? 0}% • Chat CVR ${(l2?.chat_kpis || []).find(k => k.id === 'kpi_chat_cvr')?.value ?? 0}% • ${l2?.time_decay_sla?.avg_frt_minutes ?? 0} دقيقة FRT`;
+  const dataContextNote = auditResult.data_context_note?.trim();
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'analyst'; text: string }>>([
     { role: 'analyst', text: `أنا محلل ${isLayer1 ? 'الإعلانات والمحتوى' : 'الشات والمبيعات'}. اسألني عن سبب المشكلة أو القرار التالي، وسأجيب من أرقام هذه الطبقة.` }
@@ -54,6 +55,12 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
         <div className="rounded-xl border border-slate-200 bg-white/80 p-3"><span className="block mb-1 font-bold text-slate-900">الاستنتاج الخبير</span><p className="text-slate-700">{finding}</p><p className="mt-2 text-[10px] font-mono text-violet-700">{evidence}</p></div>
         <div className="rounded-xl border border-violet-200 bg-violet-50/80 p-3"><div className="flex items-center gap-1.5 text-violet-900 font-bold mb-1"><Target className="w-3.5 h-3.5" />قرار الـ24 ساعة</div><p className="text-slate-700">{action}</p></div>
       </div>
+      {dataContextNote && (
+        <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3 text-xs leading-relaxed text-slate-700">
+          <span className="block text-[10px] font-bold text-violet-800">ملحوظة البيانات المرفقة</span>
+          <p className="mt-1 whitespace-pre-line">{dataContextNote}</p>
+        </div>
+      )}
       <div className="mt-3 rounded-xl border border-slate-200 bg-white/85 overflow-hidden">
         <div className="flex items-center gap-1.5 border-b border-slate-100 px-3 py-2 text-[11px] font-bold text-slate-800"><MessageCircle className="w-3.5 h-3.5 text-violet-600" />ناقش التحليل</div>
         <div className="max-h-52 overflow-y-auto space-y-2 p-3">

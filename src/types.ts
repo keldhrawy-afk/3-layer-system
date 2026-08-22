@@ -359,6 +359,8 @@ export interface AuditResult {
   layer1_diagnostic?: Layer1DiagnosticResult;
   layer2_diagnostic?: Layer2DiagnosticResult;
   layer5_diagnostic?: Layer5DiagnosticResult;
+  /** User-provided context describing how the uploaded data should be interpreted. */
+  data_context_note?: string;
   raw_calculated_metrics?: Record<string, number | string>;
 }
 
@@ -467,6 +469,8 @@ export interface AuditPayload {
   backend_sheet: BackendSheetData;
   chat_data?: ChatSalesData;
   content_offers?: ContentOffer[];
+  /** Optional context attached to the current import, retained across all layers. */
+  data_context_note?: string;
 }
 
 export interface WeeklySnapshot {

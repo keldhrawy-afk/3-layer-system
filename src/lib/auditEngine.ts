@@ -558,6 +558,7 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
       breakeven_roas: Number(breakevenRoas.toFixed(2))
     },
     diagnosis_summary: summary,
+    data_context_note: payload.data_context_note?.trim() || undefined,
     funnel_leak_location: leakLocation,
     layer1_diagnostic: {
       decision_light: layer1Light,

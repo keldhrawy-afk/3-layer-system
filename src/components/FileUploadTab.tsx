@@ -139,7 +139,10 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         try {
           const json = JSON.parse(e.target?.result as string);
           if (json.ad_platforms && json.backend_sheet) {
-            setStagedPayload(json);
+            setStagedPayload(previous => ({
+              ...json,
+              data_context_note: json.data_context_note || previous.data_context_note
+            }));
             setFileStatus({ type: 'success', message: 'تم فتح ملف الـ JSON المكتمل واستخراج البيانات بنجاح!' });
           } else if (Array.isArray(json)) {
             processParsedData(json);
@@ -955,6 +958,26 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             )}
           </div>
         )}
+
+        {/* Import context — intentionally optional so it never blocks a data upload. */}
+        <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/70 p-4" dir="rtl">
+          <div className="mb-2 flex items-start gap-2">
+            <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-violet-700" />
+            <div>
+              <label htmlFor="data-context-note" className="block text-sm font-bold text-slate-900 font-headline">ملحوظة</label>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600">أضف سياقًا يشرح طريقة قراءة الملف حتى يظل تحليل كل الـLayers صحيحًا.</p>
+            </div>
+          </div>
+          <textarea
+            id="data-context-note"
+            value={stagedPayload.data_context_note || ''}
+            onChange={(event) => setStagedPayload(previous => ({ ...previous, data_context_note: event.target.value }))}
+            rows={3}
+            placeholder="مثال: التقرير للفترة 1–7 أغسطس. حالة «تم الشحن» لا تعني تم التسليم. Purchase من Meta استرشادي فقط، وتم استبعاد الأوردرات التجريبية."
+            className="w-full rounded-lg border border-violet-200 bg-white p-3 text-xs leading-relaxed text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+          />
+          <p className="mt-2 text-[10px] text-violet-700">تُحفظ الملحوظة مع التحليل وتظهر للمحلل في Layer 1 وLayer 2؛ لا تعدّل القيم أو الحسابات تلقائيًا.</p>
+        </div>
 
         {/* Uploaded Image Preview Box */}
         {imagePreview && (
