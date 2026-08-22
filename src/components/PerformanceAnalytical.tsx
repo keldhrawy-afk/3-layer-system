@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrainCircuit, CheckCircle2, ShieldAlert, Target } from 'lucide-react';
+import React, { useState } from 'react';
+import { BrainCircuit, CheckCircle2, ShieldAlert, Target, Send, MessageCircle } from 'lucide-react';
 import { AuditResult } from '../types';
 
 interface PerformanceAnalyticalProps {
@@ -23,6 +23,26 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
   const evidence = isLayer1
     ? `Hook ${l1?.hook_rate ?? 0}% • Hold ${l1?.hold_rate ?? 0}% • CTR ${l1?.outbound_ctr ?? 0}% • Click→Chat ${l1?.click_to_message_rate ?? 0}%`
     : `Qualified ${(l2?.chat_kpis || []).find(k => k.id === 'kpi_qualified_rate')?.value ?? 0}% • Chat CVR ${(l2?.chat_kpis || []).find(k => k.id === 'kpi_chat_cvr')?.value ?? 0}% • ${l2?.time_decay_sla?.avg_frt_minutes ?? 0} دقيقة FRT`;
+  const [question, setQuestion] = useState('');
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'analyst'; text: string }>>([
+    { role: 'analyst', text: `أنا محلل ${isLayer1 ? 'الإعلانات والمحتوى' : 'الشات والمبيعات'}. اسألني عن سبب المشكلة أو القرار التالي، وسأجيب من أرقام هذه الطبقة.` }
+  ]);
+
+  const replyToQuestion = (input: string) => {
+    const text = input.toLowerCase();
+    if (isLayer1 && /هوك|hook|مشاهدة|فيديو/.test(text)) return `الـHook الحالي ${l1?.hook_rate ?? 0}%. ${l1?.hook_rate && l1.hook_rate < 15 ? 'ده أقل من الحد الآمن؛ غيّر أول 2–3 ثوانٍ فقط واختبر نسخة واحدة مقابل الأصل.' : 'الهوك في نطاق مقبول؛ لا تغيّره قبل فحص الـHold والـCTR.'}`;
+    if (isLayer1 && /عرض|cta|نقرة|ctr|رسالة/.test(text)) return `إشارة العرض والـCTA: Outbound CTR ${l1?.outbound_ctr ?? 0}% وClick→Chat ${l1?.click_to_message_rate ?? 0}%. ${action}`;
+    if (!isLayer1 && /رد|frt|سرعة/.test(text)) return `متوسط أول رد ${l2?.time_decay_sla?.avg_frt_minutes ?? 0} دقيقة. ${l2?.time_decay_sla && l2.time_decay_sla.avg_frt_minutes > 5 ? 'الأولوية: SLA أقل من 5 دقائق قبل تعديل أي إعلان.' : 'سرعة الرد مقبولة؛ انتقل لفحص السكريبت والتأهيل.'}`;
+    if (!isLayer1 && /سعر|اعتراض|offer|عرض/.test(text)) return `أكبر اعتراض مسجل: ${l2?.objection_breakdown?.[0]?.label_ar ?? 'لا توجد بيانات اعتراضات كافية'}. القرار: ${l2?.objection_breakdown?.[0]?.executive_action ?? action}`;
+    return `${finding}\n\nقرار الـ24 ساعة: ${action}`;
+  };
+
+  const sendQuestion = () => {
+    const trimmed = question.trim();
+    if (!trimmed) return;
+    setMessages(prev => [...prev, { role: 'user', text: trimmed }, { role: 'analyst', text: replyToQuestion(trimmed) }]);
+    setQuestion('');
+  };
 
   return (
     <section className="mt-6 rounded-2xl border border-violet-200 bg-gradient-to-l from-violet-50 via-white to-indigo-50 p-4 md:p-5 shadow-2xs" dir="rtl">
@@ -34,7 +54,17 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
         <div className="rounded-xl border border-slate-200 bg-white/80 p-3"><span className="block mb-1 font-bold text-slate-900">الاستنتاج الخبير</span><p className="text-slate-700">{finding}</p><p className="mt-2 text-[10px] font-mono text-violet-700">{evidence}</p></div>
         <div className="rounded-xl border border-violet-200 bg-violet-50/80 p-3"><div className="flex items-center gap-1.5 text-violet-900 font-bold mb-1"><Target className="w-3.5 h-3.5" />قرار الـ24 ساعة</div><p className="text-slate-700">{action}</p></div>
       </div>
-      <p className="mt-2 text-[10px] text-slate-500">التحليل يعمل محلياً من أرقام الـaudit الحالية؛ لا يتظاهر باتصال AI خارجي غير مُشغّل.</p>
+      <div className="mt-3 rounded-xl border border-slate-200 bg-white/85 overflow-hidden">
+        <div className="flex items-center gap-1.5 border-b border-slate-100 px-3 py-2 text-[11px] font-bold text-slate-800"><MessageCircle className="w-3.5 h-3.5 text-violet-600" />ناقش التحليل</div>
+        <div className="max-h-52 overflow-y-auto space-y-2 p-3">
+          {messages.map((message, index) => <div key={index} className={`max-w-[92%] rounded-xl px-3 py-2 text-[11px] leading-relaxed whitespace-pre-line ${message.role === 'user' ? 'mr-auto bg-violet-600 text-white' : 'bg-slate-100 text-slate-700'}`}>{message.text}</div>)}
+        </div>
+        <div className="flex gap-2 border-t border-slate-100 p-2">
+          <input value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && sendQuestion()} placeholder={isLayer1 ? 'اسأل عن الـHook أو العرض أو الـCTA…' : 'اسأل عن الردود أو الاعتراضات أو الإغلاق…'} className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 outline-none focus:border-violet-500" />
+          <button type="button" onClick={sendQuestion} className="rounded-lg bg-violet-600 px-3 text-white transition hover:bg-violet-700" aria-label="إرسال السؤال"><Send className="w-4 h-4" /></button>
+        </div>
+      </div>
+      <p className="mt-2 text-[10px] text-slate-500">شات تحليلي محلي يعتمد على أرقام الـaudit الحالية؛ لا يتظاهر باتصال AI خارجي غير مُشغّل.</p>
     </section>
   );
 };
