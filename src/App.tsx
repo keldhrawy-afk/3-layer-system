@@ -195,6 +195,8 @@ export default function App() {
           onSelectTab={setActiveTab} 
           autoStopLightStatus={autoStopLightStatus}
           autoStopLightReason={autoStopLightReason}
+          payload={currentPayload}
+          auditResult={auditResult}
         />
 
         {/* Center Dashboard View Area */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavTab } from '../types';
+import { NavTab, AuditPayload, AuditResult } from '../types';
 import { 
   Home, 
   UploadCloud,
@@ -19,7 +19,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   CheckSquare,
-  HelpCircle
+  HelpCircle,
+  BrainCircuit,
+  FileWarning,
+  ChevronDown
 } from 'lucide-react';
 
 interface SidebarNavProps {
@@ -27,6 +30,8 @@ interface SidebarNavProps {
   onSelectTab: (tab: NavTab) => void;
   autoStopLightStatus?: StopLightStatus;
   autoStopLightReason?: string;
+  payload: AuditPayload;
+  auditResult: AuditResult;
 }
 
 export type StopLightStatus = 'RED' | 'YELLOW' | 'GREEN';
@@ -35,10 +40,25 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   activeTab, 
   onSelectTab,
   autoStopLightStatus = 'GREEN',
-  autoStopLightReason
+  autoStopLightReason,
+  payload,
+  auditResult
 }) => {
   // Stop Light Guardrail State (صفحة 32) - تلقائي بناءً على الأرقام الحقيقية
   const stopLightStatus = autoStopLightStatus;
+  const [assistantOpen, setAssistantOpen] = useState(true);
+  const platform = payload.ad_platforms[0];
+  const inputs = auditResult.analysis_inputs;
+  const missingMetrics = [
+    !platform?.spend && 'الصرف الإعلاني (Spend)',
+    !platform?.impressions && 'الظهور (Impressions)',
+    !platform?.clicks && 'النقرات (Clicks)',
+    !payload.backend_sheet.raw_orders && 'حجم الطلبات',
+    !payload.backend_sheet.average_order_value && 'قيمة الطلب / AOV',
+    payload.chat_data?.average_frt_minutes === undefined && 'سرعة أول رد FRT',
+    !inputs?.creative_images.length && 'صورة أو فيديو الإعلان',
+    !inputs?.has_text && 'سياق كتابي أو تفسير للداتا'
+  ];
 
   const primaryNavItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'لوحة التحكم الرئيسية', icon: <Home className="w-4 h-4" /> },
@@ -153,6 +173,17 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
       </div>
 
+      <div className="hidden md:block mb-2 rounded-xl border border-violet-200 bg-gradient-to-b from-violet-50 to-white p-3 text-right shadow-2xs" dir="rtl">
+        <button type="button" onClick={() => setAssistantOpen(open => !open)} className="flex w-full items-center justify-between gap-2 text-right">
+          <span className="flex items-center gap-1.5 text-xs font-bold text-violet-950"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-600 text-white"><BrainCircuit className="h-3.5 w-3.5" /></span>AI Data Assistant</span>
+          <ChevronDown className={`h-4 w-4 text-violet-700 transition ${assistantOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {assistantOpen && <>
+          <p className="mt-2 text-[10px] leading-relaxed text-slate-600">يراجع آخر Run وكل مدخلات النظام ويحدد ما لا يمكن تحليله بدقة بسبب نقص الداتا.</p>
+          {missingMetrics.length ? <div className="mt-2 space-y-1.5"><p className="flex items-center gap-1 text-[10px] font-bold text-amber-800"><FileWarning className="h-3.5 w-3.5" />ناقص {missingMetrics.length} مؤشرات</p>{missingMetrics.slice(0, 4).map(metric => <p key={metric} className="rounded-md bg-white px-2 py-1 text-[10px] text-slate-700">• {metric}</p>)}{missingMetrics.length > 4 && <p className="text-[10px] text-slate-500">+ {missingMetrics.length - 4} عناصر أخرى</p>}<button type="button" onClick={() => onSelectTab('upload_files')} className="mt-1 w-full rounded-md bg-violet-600 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-violet-700">أضف داتا أو توضيح</button></div> : <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1.5 text-[10px] font-bold text-emerald-800">الداتا الأساسية متاحة للتحليل الحالي.</p>}
+        </>}
+      </div>
+
       <div className="text-[10px] font-bold font-mono tracking-[0.12em] text-[#8b8497] px-3 py-2 hidden md:block border-b border-[#eeeaf5] mb-1 uppercase">
         Workspace
       </div>
@@ -214,4 +245,3 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     </aside>
   );
 };
-
