@@ -7,7 +7,9 @@ import {
   ShieldCheck, 
   AlertTriangle, 
   XCircle,
-  UploadCloud
+  UploadCloud,
+  Share2,
+  Link2
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -20,6 +22,8 @@ interface HeaderProps {
   presets?: { label: string }[];
   isAuditing: boolean;
   isDemoData?: boolean;
+  isSharedReport?: boolean;
+  onShareReport?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,7 +32,9 @@ export const Header: React.FC<HeaderProps> = ({
   onRefreshAudit,
   onOpenFileUpload,
   isAuditing,
-  isDemoData = false
+  isDemoData = false,
+  isSharedReport = false,
+  onShareReport
 }) => {
   const getStatusBadge = () => {
     switch (systemStatus) {
@@ -84,6 +90,9 @@ export const Header: React.FC<HeaderProps> = ({
               وضع تجريبي — ارفع بياناتك للحصول على قرار فعلي
             </div>
           )}
+          {isSharedReport && (
+            <div className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-800"><Link2 className="h-3.5 w-3.5" />تقرير مشترك — عرض للقراءة</div>
+          )}
           <div title={statusReason}>
             {getStatusBadge()}
           </div>
@@ -96,6 +105,16 @@ export const Header: React.FC<HeaderProps> = ({
             <RotateCw className={`w-3.5 h-3.5 text-[#6d45ff] ${isAuditing ? 'animate-spin' : ''}`} />
             <span>{isAuditing ? 'جاري الفحص...' : 'إعادة الفحص والتدقيق'}</span>
           </button>
+
+          {onShareReport && (
+            <button
+              onClick={onShareReport}
+              className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-800 transition-all hover:bg-emerald-100 active:scale-95"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>مشاركة التقرير</span>
+            </button>
+          )}
 
           {onOpenFileUpload && (
             <button

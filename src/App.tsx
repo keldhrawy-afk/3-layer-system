@@ -23,20 +23,52 @@ import { MarketBenchmarkTab } from './components/MarketBenchmarkTab';
 import { DecisionMatrixTab } from './components/DecisionMatrixTab';
 import { CommercialOutputsBoard } from './components/CommercialOutputsBoard';
 
-export default function App() {
-  // يبدأ المستخدم من مسار الإدخال حتى لا يخلط الأرقام التجريبية بنتائج متجره.
-  const [activeTab, setActiveTab] = useState<NavTab>('upload_files');
-  const [selectedPresetIndex, setSelectedPresetIndex] = useState(0);
-  const [currentPayload, setCurrentPayload] = useState<AuditPayload>(
-    PRESET_PAYLOADS[0].payload
-  );
+interface SharedReportSnapshot {
+  version: 1;
+  sharedAt: string;
+  payload: AuditPayload;
+  auditResult: AuditResult;
+}
 
-  const [auditResult, setAuditResult] = useState<AuditResult>(() =>
-    run5LayerAudit(PRESET_PAYLOADS[0].payload)
-  );
+const encodeShareSnapshot = (snapshot: SharedReportSnapshot) => {
+  const bytes = new TextEncoder().encode(JSON.stringify(snapshot));
+  let binary = '';
+  bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+};
+
+const readShareSnapshot = (): SharedReportSnapshot | null => {
+  try {
+    const encoded = new URLSearchParams(window.location.hash.slice(1)).get('report');
+    if (!encoded) return null;
+    const padded = encoded.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - encoded.length % 4) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    const parsed = JSON.parse(new TextDecoder().decode(bytes)) as SharedReportSnapshot;
+    return parsed?.version === 1 && parsed.payload && parsed.auditResult ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const makeSharePayload = (payload: AuditPayload): AuditPayload => ({
+  ...payload,
+  ad_platforms: payload.ad_platforms.map(({ ad_sets, ...campaign }) => campaign),
+  backend_sheet: { ...payload.backend_sheet }
+});
+
+export default function App() {
+  const [sharedReport] = useState<SharedReportSnapshot | null>(readShareSnapshot);
+  // يبدأ المستخدم من مسار الإدخال حتى لا يخلط الأرقام التجريبية بنتائج متجره.
+  const [activeTab, setActiveTab] = useState<NavTab>(sharedReport ? 'overview' : 'upload_files');
+  const [selectedPresetIndex, setSelectedPresetIndex] = useState(0);
+  const [currentPayload, setCurrentPayload] = useState<AuditPayload>(() => sharedReport?.payload || PRESET_PAYLOADS[0].payload);
+
+  const [auditResult, setAuditResult] = useState<AuditResult>(() => sharedReport?.auditResult || run5LayerAudit(PRESET_PAYLOADS[0].payload));
 
   const [isAuditing, setIsAuditing] = useState(false);
-  const [hasLiveData, setHasLiveData] = useState(false);
+  const [hasLiveData, setHasLiveData] = useState(Boolean(sharedReport));
+  const [shareFeedback, setShareFeedback] = useState('');
 
   // Trigger audit call to backend Express endpoint or local calculation
   const executeAudit = async (payloadToAudit: AuditPayload) => {
@@ -62,7 +94,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    executeAudit(currentPayload);
+    if (!sharedReport) executeAudit(currentPayload);
   }, []);
 
   const handleSelectPreset = (idx: number) => {
@@ -80,6 +112,23 @@ export default function App() {
     setCurrentPayload(updatedPayload);
     setAuditResult(newResult);
     setHasLiveData(true);
+  };
+
+  const handleShareReport = async () => {
+    const snapshot: SharedReportSnapshot = {
+      version: 1,
+      sharedAt: new Date().toISOString(),
+      payload: makeSharePayload(currentPayload),
+      auditResult
+    };
+    const link = `${window.location.origin}${window.location.pathname}#report=${encodeShareSnapshot(snapshot)}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setShareFeedback('تم نسخ رابط التقرير. أي شخص يفتحه سيرى نفس النتيجة دون إعادة رفع البيانات.');
+    } catch {
+      window.prompt('انسخ رابط التقرير وأرسله للمدير:', link);
+      setShareFeedback('رابط التقرير جاهز للمشاركة.');
+    }
   };
 
   // حساب حالة إشارة المرور تلقائياً بناءً على الأرقام الحقيقية (صفحة 32)
@@ -127,7 +176,11 @@ export default function App() {
         presets={PRESET_PAYLOADS}
         isAuditing={isAuditing}
         isDemoData={!hasLiveData}
+        isSharedReport={Boolean(sharedReport)}
+        onShareReport={hasLiveData ? handleShareReport : undefined}
       />
+
+      {shareFeedback && <div className="border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs font-bold text-emerald-900" dir="rtl">{shareFeedback}</div>}
 
       {/* Main Workspace Body */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
