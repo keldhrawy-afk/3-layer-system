@@ -702,6 +702,17 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           </div>
         </div>
 
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4" dir="rtl">
+          <div className="flex items-start gap-2">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-indigo-700" />
+            <div>
+              <p className="text-xs font-bold text-indigo-950">ارفع أكثر من نوع في نفس التحليل</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-600">تقدر ترفع ملف البيانات أولاً، ثم تضيف صورة إعلان أو صور شات، وتكتب أو تلصق نصًا كذلك. التنقل بين الاختيارات لا يمسح أي شيء تم رفعه أو تطبيقه.</p>
+              <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-bold"><span className="rounded-full border border-emerald-200 bg-white px-2 py-1 text-emerald-800">ملف CSV / Excel / JSON</span><span className="rounded-full border border-violet-200 bg-white px-2 py-1 text-violet-800">صورة إعلان أو شات</span><span className="rounded-full border border-blue-200 bg-white px-2 py-1 text-blue-800">نص / توضيح إضافي</span></div>
+            </div>
+          </div>
+        </div>
+
         {/* Mode Selector Buttons */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2">
           <button
@@ -938,8 +949,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             onDrop={(e) => {
               e.preventDefault();
               setIsDragging(false);
-              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handleFileProcess(e.dataTransfer.files[0]);
+              if (e.dataTransfer.files?.length) {
+                Array.from(e.dataTransfer.files).forEach(handleFileProcess);
               }
             }}
             onClick={() => fileInputRef.current?.click()}
@@ -953,11 +964,13 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
               type="file"
               ref={fileInputRef}
               onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleFileProcess(e.target.files[0]);
+                if (e.target.files?.length) {
+                  Array.from(e.target.files).forEach(handleFileProcess);
                 }
+                e.target.value = '';
               }}
               accept=".csv, .xlsx, .xls, .json, .png, .jpg, .jpeg, .webp, .gif"
+              multiple
               className="hidden"
             />
 
@@ -970,7 +983,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
                 اسحب واسقط الملف أو صورة الإعلان هنا، أو اضغط للتصفح
               </span>
               <span className="text-xs text-slate-600 font-mono mt-1 block">
-                يدعم رفع ملفات Excel (.xlsx, .xls), CSV (.csv), JSON (.json), والصور (.png, .jpg, .webp)
+                يدعم اختيار أكثر من ملف في المرة نفسها: Excel (.xlsx, .xls)، CSV (.csv)، JSON (.json)، والصور (.png, .jpg, .webp)
               </span>
             </div>
 
