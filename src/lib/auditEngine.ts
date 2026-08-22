@@ -559,6 +559,7 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
     },
     diagnosis_summary: summary,
     data_context_note: payload.data_context_note?.trim() || undefined,
+    system_memory_notes: payload.system_memory_notes?.filter(Boolean) || [],
     funnel_leak_location: leakLocation,
     layer1_diagnostic: {
       decision_light: layer1Light,

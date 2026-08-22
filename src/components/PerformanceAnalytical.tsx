@@ -24,6 +24,8 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
     ? `Hook ${l1?.hook_rate ?? 0}% • Hold ${l1?.hold_rate ?? 0}% • CTR ${l1?.outbound_ctr ?? 0}% • Click→Chat ${l1?.click_to_message_rate ?? 0}%`
     : `Qualified ${(l2?.chat_kpis || []).find(k => k.id === 'kpi_qualified_rate')?.value ?? 0}% • Chat CVR ${(l2?.chat_kpis || []).find(k => k.id === 'kpi_chat_cvr')?.value ?? 0}% • ${l2?.time_decay_sla?.avg_frt_minutes ?? 0} دقيقة FRT`;
   const dataContextNote = auditResult.data_context_note?.trim();
+  const systemMemoryNotes = auditResult.system_memory_notes || [];
+  const rememberedContext = systemMemoryNotes.length > 0 ? `\n\nسياق محفوظ يجب أخذه في الاعتبار:\n${systemMemoryNotes.map(note => `• ${note}`).join('\n')}` : '';
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'analyst'; text: string }>>([
     { role: 'analyst', text: `أنا محلل ${isLayer1 ? 'الإعلانات والمحتوى' : 'الشات والمبيعات'}. اسألني عن سبب المشكلة أو القرار التالي، وسأجيب من أرقام هذه الطبقة.` }
@@ -31,11 +33,11 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
 
   const replyToQuestion = (input: string) => {
     const text = input.toLowerCase();
-    if (isLayer1 && /هوك|hook|مشاهدة|فيديو/.test(text)) return `الـHook الحالي ${l1?.hook_rate ?? 0}%. ${l1?.hook_rate && l1.hook_rate < 15 ? 'ده أقل من الحد الآمن؛ غيّر أول 2–3 ثوانٍ فقط واختبر نسخة واحدة مقابل الأصل.' : 'الهوك في نطاق مقبول؛ لا تغيّره قبل فحص الـHold والـCTR.'}`;
-    if (isLayer1 && /عرض|cta|نقرة|ctr|رسالة/.test(text)) return `إشارة العرض والـCTA: Outbound CTR ${l1?.outbound_ctr ?? 0}% وClick→Chat ${l1?.click_to_message_rate ?? 0}%. ${action}`;
-    if (!isLayer1 && /رد|frt|سرعة/.test(text)) return `متوسط أول رد ${l2?.time_decay_sla?.avg_frt_minutes ?? 0} دقيقة. ${l2?.time_decay_sla && l2.time_decay_sla.avg_frt_minutes > 5 ? 'الأولوية: SLA أقل من 5 دقائق قبل تعديل أي إعلان.' : 'سرعة الرد مقبولة؛ انتقل لفحص السكريبت والتأهيل.'}`;
-    if (!isLayer1 && /سعر|اعتراض|offer|عرض/.test(text)) return `أكبر اعتراض مسجل: ${l2?.objection_breakdown?.[0]?.label_ar ?? 'لا توجد بيانات اعتراضات كافية'}. القرار: ${l2?.objection_breakdown?.[0]?.executive_action ?? action}`;
-    return `${finding}\n\nقرار الـ24 ساعة: ${action}`;
+    if (isLayer1 && /هوك|hook|مشاهدة|فيديو/.test(text)) return `الـHook الحالي ${l1?.hook_rate ?? 0}%. ${l1?.hook_rate && l1.hook_rate < 15 ? 'ده أقل من الحد الآمن؛ غيّر أول 2–3 ثوانٍ فقط واختبر نسخة واحدة مقابل الأصل.' : 'الهوك في نطاق مقبول؛ لا تغيّره قبل فحص الـHold والـCTR.'}${rememberedContext}`;
+    if (isLayer1 && /عرض|cta|نقرة|ctr|رسالة/.test(text)) return `إشارة العرض والـCTA: Outbound CTR ${l1?.outbound_ctr ?? 0}% وClick→Chat ${l1?.click_to_message_rate ?? 0}%. ${action}${rememberedContext}`;
+    if (!isLayer1 && /رد|frt|سرعة/.test(text)) return `متوسط أول رد ${l2?.time_decay_sla?.avg_frt_minutes ?? 0} دقيقة. ${l2?.time_decay_sla && l2.time_decay_sla.avg_frt_minutes > 5 ? 'الأولوية: SLA أقل من 5 دقائق قبل تعديل أي إعلان.' : 'سرعة الرد مقبولة؛ انتقل لفحص السكريبت والتأهيل.'}${rememberedContext}`;
+    if (!isLayer1 && /سعر|اعتراض|offer|عرض/.test(text)) return `أكبر اعتراض مسجل: ${l2?.objection_breakdown?.[0]?.label_ar ?? 'لا توجد بيانات اعتراضات كافية'}. القرار: ${l2?.objection_breakdown?.[0]?.executive_action ?? action}${rememberedContext}`;
+    return `${finding}\n\nقرار الـ24 ساعة: ${action}${rememberedContext}`;
   };
 
   const sendQuestion = () => {
@@ -59,6 +61,12 @@ export const PerformanceAnalytical: React.FC<PerformanceAnalyticalProps> = ({ la
         <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3 text-xs leading-relaxed text-slate-700">
           <span className="block text-[10px] font-bold text-violet-800">ملحوظة البيانات المرفقة</span>
           <p className="mt-1 whitespace-pre-line">{dataContextNote}</p>
+        </div>
+      )}
+      {systemMemoryNotes.length > 0 && (
+        <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3 text-xs leading-relaxed text-slate-700">
+          <span className="block text-[10px] font-bold text-indigo-800">ذاكرة النظام المستخدمة في التحليل</span>
+          <ul className="mt-1 list-inside list-disc space-y-0.5">{systemMemoryNotes.map((note, index) => <li key={`${note}-${index}`}>{note}</li>)}</ul>
         </div>
       )}
       <div className="mt-3 rounded-xl border border-slate-200 bg-white/85 overflow-hidden">

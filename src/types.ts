@@ -361,6 +361,8 @@ export interface AuditResult {
   layer5_diagnostic?: Layer5DiagnosticResult;
   /** User-provided context describing how the uploaded data should be interpreted. */
   data_context_note?: string;
+  /** Explicitly saved, browser-local operating context supplied by the user. */
+  system_memory_notes?: string[];
   raw_calculated_metrics?: Record<string, number | string>;
 }
 
@@ -471,6 +473,8 @@ export interface AuditPayload {
   content_offers?: ContentOffer[];
   /** Optional context attached to the current import, retained across all layers. */
   data_context_note?: string;
+  /** Notes the user explicitly chose to retain for future uploads on this browser. */
+  system_memory_notes?: string[];
 }
 
 export interface WeeklySnapshot {

@@ -30,6 +30,18 @@ interface FileUploadTabProps {
   onNavigateToOverview?: () => void;
 }
 
+const SYSTEM_MEMORY_STORAGE_KEY = 'three-layer-system.import-memory.v1';
+
+const loadSystemMemory = (): string[] => {
+  try {
+    const stored = window.localStorage.getItem(SYSTEM_MEMORY_STORAGE_KEY);
+    const notes = stored ? JSON.parse(stored) : [];
+    return Array.isArray(notes) ? notes.filter((note): note is string => typeof note === 'string' && Boolean(note.trim())) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   currentPayload,
   onAuditExecute,
@@ -79,6 +91,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd, setPeriodEnd] = useState('');
   const [auditCompleted, setAuditCompleted] = useState(false);
+  const [systemMemoryNotes, setSystemMemoryNotes] = useState<string[]>(loadSystemMemory);
+  const [saveNoteToMemory, setSaveNoteToMemory] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -568,8 +582,18 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       setFileStatus({ type: 'error', message: `لا يمكن تشغيل التشخيص قبل استكمال: ${missingRequirements.join('، ')}` });
       return;
     }
-    const result = run5LayerAudit(stagedPayload);
-    onAuditExecute(stagedPayload, result);
+    const currentNote = stagedPayload.data_context_note?.trim();
+    const nextMemory = saveNoteToMemory && currentNote
+      ? [currentNote, ...systemMemoryNotes.filter(note => note !== currentNote)].slice(0, 12)
+      : systemMemoryNotes;
+    if (nextMemory !== systemMemoryNotes) {
+      setSystemMemoryNotes(nextMemory);
+      window.localStorage.setItem(SYSTEM_MEMORY_STORAGE_KEY, JSON.stringify(nextMemory));
+    }
+    const payloadWithMemory = { ...stagedPayload, system_memory_notes: nextMemory };
+    setStagedPayload(payloadWithMemory);
+    const result = run5LayerAudit(payloadWithMemory);
+    onAuditExecute(payloadWithMemory, result);
     setAuditCompleted(true);
   };
 
@@ -976,7 +1000,17 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             placeholder="مثال: التقرير للفترة 1–7 أغسطس. حالة «تم الشحن» لا تعني تم التسليم. Purchase من Meta استرشادي فقط، وتم استبعاد الأوردرات التجريبية."
             className="w-full rounded-lg border border-violet-200 bg-white p-3 text-xs leading-relaxed text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
           />
-          <p className="mt-2 text-[10px] text-violet-700">تُحفظ الملحوظة مع التحليل وتظهر للمحلل في Layer 1 وLayer 2؛ لا تعدّل القيم أو الحسابات تلقائيًا.</p>
+          <label className="mt-3 flex cursor-pointer items-center gap-2 text-[11px] font-bold text-violet-900">
+            <input type="checkbox" checked={saveNoteToMemory} onChange={(event) => setSaveNoteToMemory(event.target.checked)} className="h-4 w-4 rounded border-violet-300 text-violet-600 focus:ring-violet-500" />
+            احفظ هذه الملحوظة في ذاكرة النظام عند تشغيل التحليل
+          </label>
+          <p className="mt-2 text-[10px] text-violet-700">تظهر الملحوظة للمحلل في Layer 1 وLayer 2؛ لا تعدّل القيم أو الحسابات تلقائيًا.</p>
+          {systemMemoryNotes.length > 0 && (
+            <div className="mt-3 border-t border-violet-200 pt-3">
+              <div className="flex items-center justify-between gap-2"><span className="text-[10px] font-bold text-violet-800">ذاكرة النظام المحفوظة ({systemMemoryNotes.length})</span><button type="button" onClick={() => { setSystemMemoryNotes([]); window.localStorage.removeItem(SYSTEM_MEMORY_STORAGE_KEY); }} className="text-[10px] font-bold text-rose-700 hover:text-rose-800">مسح الذاكرة</button></div>
+              <div className="mt-2 space-y-1.5">{systemMemoryNotes.map((note, index) => <div key={`${note}-${index}`} className="flex items-start justify-between gap-2 rounded-lg bg-white/80 px-2.5 py-2 text-[10px] leading-relaxed text-slate-700"><span>{note}</span><button type="button" onClick={() => { const next = systemMemoryNotes.filter((_, itemIndex) => itemIndex !== index); setSystemMemoryNotes(next); window.localStorage.setItem(SYSTEM_MEMORY_STORAGE_KEY, JSON.stringify(next)); }} className="shrink-0 text-rose-600 hover:text-rose-800" aria-label="حذف الملحوظة المحفوظة"><Trash2 className="h-3.5 w-3.5" /></button></div>)}</div>
+            </div>
+          )}
         </div>
 
         {/* Uploaded Image Preview Box */}
