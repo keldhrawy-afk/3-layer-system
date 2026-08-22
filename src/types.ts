@@ -407,6 +407,24 @@ export interface BackendSheetData {
   cod_fee_per_order: number;
   confirmation_fee_per_order: number;
   product_performance?: ProductPerformance[];
+  operations?: OrderOperations;
+}
+
+export interface OrderDimensionPerformance {
+  name: string;
+  orders: number;
+  confirmed_orders: number;
+  delivered_orders: number;
+  cancelled_orders: number;
+  revenue: number;
+}
+
+export interface OrderOperations {
+  detailed_orders_count: number;
+  sources: OrderDimensionPerformance[];
+  sales_reps: OrderDimensionPerformance[];
+  governorates: OrderDimensionPerformance[];
+  couriers: OrderDimensionPerformance[];
 }
 
 export interface ProductPerformance {

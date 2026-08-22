@@ -291,7 +291,15 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       let delivered = 0;
       let cogs = 0;
       let aov = 0;
+      let detailedRevenue = 0;
       const products = new Map<string, { confirmed_orders: number; revenue: number; delivered_orders: number; cancelled_orders: number }>();
+      const dimensions = {
+        sources: new Map<string, { orders: number; confirmed_orders: number; delivered_orders: number; cancelled_orders: number; revenue: number }>(),
+        sales_reps: new Map<string, { orders: number; confirmed_orders: number; delivered_orders: number; cancelled_orders: number; revenue: number }>(),
+        governorates: new Map<string, { orders: number; confirmed_orders: number; delivered_orders: number; cancelled_orders: number; revenue: number }>(),
+        couriers: new Map<string, { orders: number; confirmed_orders: number; delivered_orders: number; cancelled_orders: number; revenue: number }>()
+      };
+      const isDetailedOrdersExport = rows.some((row) => Object.keys(row).some((key) => /order\s*(id|no|number)?|invoice|رقم.*(اوردر|طلب|فاتورة)/i.test(key)));
 
       rows.forEach((row) => {
         const findVal = (...keys: string[]) => {
@@ -303,6 +311,45 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           }
           return 0;
         };
+        const findText = (...keys: string[]) => {
+          const field = Object.keys(row).find((key) => keys.some((item) => key.toLowerCase().trim().includes(item.toLowerCase())));
+          return field ? String(row[field] || '').trim() : '';
+        };
+
+        if (isDetailedOrdersExport) {
+          const status = findText('status', 'حالة الطلب', 'الحالة').toLowerCase();
+          const isCancelled = /cancel|ملغي|مرتجع|رفض|لا يرد|لايرد/.test(status);
+          const isDelivered = /delivered|تم التسليم|تم التوصيل|مسلمات|مسلم/.test(status);
+          const isConfirmed = !isCancelled && /confirm|تأكيد|تم الشحن|قيد الشحن|جاري التجهيز|قيد التوصيل|تم التسليم|تم التوصيل/.test(status);
+          const revenue = findVal('order value', 'total', 'amount', 'revenue', 'sales', 'قيمة الطلب', 'إجمالي', 'المبيعات');
+          rawLeads += 1;
+          confirmed += isConfirmed ? 1 : 0;
+          delivered += isDelivered ? 1 : 0;
+          cancelled += isCancelled ? 1 : 0;
+          detailedRevenue += revenue;
+          if (!cogs) cogs = findVal('cogs', 'cost per order', 'تكلفة القطعة', 'سعر الجملة');
+
+          const productName = findText('product name', 'product', 'item', 'sku', 'اسم المنتج', 'المنتج');
+          if (productName) {
+            const product = products.get(productName) || { confirmed_orders: 0, revenue: 0, delivered_orders: 0, cancelled_orders: 0 };
+            product.confirmed_orders += isConfirmed ? 1 : 0;
+            product.revenue += revenue;
+            product.delivered_orders += isDelivered ? 1 : 0;
+            product.cancelled_orders += isCancelled ? 1 : 0;
+            products.set(productName, product);
+          }
+          const track = (map: Map<string, { orders: number; confirmed_orders: number; delivered_orders: number; cancelled_orders: number; revenue: number }>, name: string) => {
+            if (!name) return;
+            const item = map.get(name) || { orders: 0, confirmed_orders: 0, delivered_orders: 0, cancelled_orders: 0, revenue: 0 };
+            item.orders += 1; item.confirmed_orders += isConfirmed ? 1 : 0; item.delivered_orders += isDelivered ? 1 : 0; item.cancelled_orders += isCancelled ? 1 : 0; item.revenue += revenue;
+            map.set(name, item);
+          };
+          track(dimensions.sources, findText('source', 'المصدر'));
+          track(dimensions.sales_reps, findText('sales rep', 'salesperson', 'اسم السيلز', 'السيلز'));
+          track(dimensions.governorates, findText('governorate', 'province', 'المحافظة'));
+          track(dimensions.couriers, findText('courier', 'مندوب', 'شركة الشحن'));
+          return;
+        }
 
         rawLeads += findVal('raw', 'total orders', 'leads', 'إجمالي الطلبات', 'الأوردرات');
         confirmed += findVal('confirm', 'مؤكد', 'التأكيدات', 'valid');
@@ -323,6 +370,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         }
       });
 
+      if (isDetailedOrdersExport && detailedRevenue > 0) aov = detailedRevenue / Math.max(1, rawLeads);
+
       const updatedBackendSheet: BackendSheetData = {
         raw_orders: rawLeads,
         confirmed_orders: confirmed,
@@ -333,7 +382,14 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         shipping_cost_per_order: 80,
         cod_fee_per_order: 25,
         confirmation_fee_per_order: 15,
-        product_performance: Array.from(products.entries()).map(([product_name, stats]) => ({ product_name, ...stats }))
+        product_performance: Array.from(products.entries()).map(([product_name, stats]) => ({ product_name, ...stats })),
+        operations: {
+          detailed_orders_count: isDetailedOrdersExport ? rawLeads : 0,
+          sources: Array.from(dimensions.sources.entries()).map(([name, stats]) => ({ name, ...stats })),
+          sales_reps: Array.from(dimensions.sales_reps.entries()).map(([name, stats]) => ({ name, ...stats })),
+          governorates: Array.from(dimensions.governorates.entries()).map(([name, stats]) => ({ name, ...stats })),
+          couriers: Array.from(dimensions.couriers.entries()).map(([name, stats]) => ({ name, ...stats }))
+        }
       };
 
       setStagedPayload(prev => ({
@@ -346,7 +402,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       setFileStatus({
         type: hasBackendMetrics ? 'success' : 'error',
         message: hasBackendMetrics
-          ? `تم تحليل شيت الكول سنتر والطلبات! الطلبات الأوليّة: ${rawLeads} | المؤكدة: ${confirmed} (معدل التأكيد ${((confirmed/Math.max(1, rawLeads))*100).toFixed(1)}%)`
+          ? `تم تحليل ${isDetailedOrdersExport ? 'Export أوردرات تفصيلي' : 'شيت الكول سنتر والطلبات'} بنجاح! الطلبات: ${rawLeads} | المؤكدة: ${confirmed} | المسلمة: ${delivered} | المصادر: ${dimensions.sources.size}`
           : 'شيت الـCRM يحتاج: إجمالي الطلبات، المؤكد، تكلفة المنتج (COGS)، ومتوسط قيمة الطلب (AOV). لم يتم استبدالها بأرقام افتراضية.'
       });
     }
@@ -524,7 +580,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       content = `Platform,Campaign Name,Impressions,Spend,Clicks,3Sec Views,75Pct Views,Reported Orders,Reported Revenue\nMeta Ads,Summer Sale CBO,450000,48500,9500,125000,22000,145,172500`;
       filename = 'prepilot_ad_platforms_sample.csv';
     } else if (type === 'csv_sheet') {
-      content = `Order ID,Product Name,Confirmed Orders,Delivered Orders,Cancelled Orders,Revenue,Raw Orders,COGS Per Order,AOV\n#1001,باكدج العناية الكاملة,121,98,58,145200,233,350,1200`;
+      content = `Order ID,Date,Source,Campaign,Creative,Offer Code,Product Name,Order Value,Status,Sales Rep,Governorate,Courier,Delivery Type,Created At,First Contact At,Confirmed At,Shipped At,Delivered At,Follow-up Count,Final Rejection Reason,Return/Cancel Reason,COGS Per Order\nHG-1001,2026-08-22,WhatsApp Sara,Summer CBO,UGC Doctor 01,BUNDLE20,باكدج العناية الكاملة,1200,تم التسليم,سارة المهدي,القاهرة,Bosta,External,2026-08-22 10:00,2026-08-22 10:04,2026-08-22 10:15,2026-08-22 14:00,2026-08-23 12:30,2,,,350`;
       filename = 'prepilot_backend_sheet_sample.csv';
     } else {
       content = JSON.stringify(currentPayload, null, 2);

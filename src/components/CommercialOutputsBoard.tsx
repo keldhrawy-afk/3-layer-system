@@ -11,6 +11,9 @@ export const CommercialOutputsBoard: React.FC<CommercialOutputsBoardProps> = ({ 
   const products = useMemo(() => [...(payload.backend_sheet.product_performance || [])]
     .sort((a, b) => b.confirmed_orders - a.confirmed_orders)
     .slice(0, 3), [payload.backend_sheet.product_performance]);
+  const topSources = useMemo(() => [...(payload.backend_sheet.operations?.sources || [])]
+    .sort((a, b) => b.delivered_orders - a.delivered_orders || b.revenue - a.revenue)
+    .slice(0, 3), [payload.backend_sheet.operations?.sources]);
 
   const offers = (payload.content_offers || []).filter((offer) => offer.status === 'ACTIVE');
   const winningAngle = auditResult.layer1_diagnostic?.winning_angle;
@@ -46,6 +49,8 @@ export const CommercialOutputsBoard: React.FC<CommercialOutputsBoardProps> = ({ 
         ) : (
           <div className="rounded-xl border border-dashed border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-950 leading-relaxed flex gap-2.5"><Database className="w-4 h-4 shrink-0 mt-0.5 text-emerald-700" /><span>ارفع في شيت الـCRM أعمدة <strong>Product Name</strong> و<strong>Confirmed Orders</strong> و<strong>Revenue</strong> ليظهر ترتيب المنتجات الحقيقي؛ لن نعرض ترتيباً تخمينياً.</span></div>
         )}
+
+        {topSources.length > 0 && <div className="border-t border-slate-100 pt-3"><div className="flex items-center justify-between mb-2"><strong className="text-xs text-slate-900">أفضل المصادر بعد التسليم</strong><span className="text-[10px] text-slate-500">ERP Export</span></div><div className="grid grid-cols-1 sm:grid-cols-3 gap-2">{topSources.map((source) => <div key={source.name} className="rounded-lg bg-emerald-50/70 border border-emerald-100 p-2"><strong className="block truncate text-[11px] text-emerald-900">{source.name}</strong><span className="text-[10px] text-slate-600">{source.delivered_orders} مُسلّم / {source.orders} أوردر</span><span className="block mt-1 text-[10px] font-mono text-emerald-700">{source.revenue.toLocaleString()} ج.م</span></div>)}</div></div>}
       </article>
 
       <article className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
