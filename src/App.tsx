@@ -311,13 +311,13 @@ export default function App() {
             </>
           )}
 
-          {activeTab === 'upload_files' && (
+          <div className={activeTab === 'upload_files' ? '' : 'hidden'}>
             <FileUploadTab
               currentPayload={currentPayload}
               onAuditExecute={handleWebhookAuditExecute}
               onNavigateToOverview={() => setActiveTab('overview')}
             />
-          )}
+          </div>
 
           {activeTab === 'signals' && (
             <SignalsTab payload={currentPayload} auditResult={auditResult} />

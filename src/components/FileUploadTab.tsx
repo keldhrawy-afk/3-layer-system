@@ -595,6 +595,25 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
     const result = run5LayerAudit(payloadWithMemory);
     onAuditExecute(payloadWithMemory, result);
     setAuditCompleted(true);
+    onNavigateToOverview?.();
+  };
+
+  const emptyBackendSheet: BackendSheetData = { raw_orders: 0, confirmed_orders: 0, cancelled_fake_orders: 0, delivered_orders: 0, cogs_per_order: 0, average_order_value: 0, shipping_cost_per_order: 0, cod_fee_per_order: 0, confirmation_fee_per_order: 0 };
+
+  const removeDataSource = (source: 'adPlatform' | 'backend') => {
+    setUploadedSources(previous => ({ ...previous, [source]: false }));
+    setStagedPayload(previous => source === 'adPlatform' ? { ...previous, ad_platforms: [] } : { ...previous, backend_sheet: emptyBackendSheet, chat_data: undefined });
+    setParsedRowsPreview(null);
+    setFileName(null);
+    setAuditCompleted(false);
+    setFileStatus({ type: 'info', message: source === 'adPlatform' ? 'تم حذف تقرير الإعلانات من جلسة التحليل.' : 'تم حذف شيت المبيعات وبيانات الـCRM من جلسة التحليل.' });
+  };
+
+  const clearAllUploads = () => {
+    setStagedPayload({ store_name: currentPayload.store_name, currency: currentPayload.currency, timeframe: currentPayload.timeframe, ad_platforms: [], backend_sheet: emptyBackendSheet, data_context_note: '', system_memory_notes: systemMemoryNotes });
+    setUploadedSources({ adPlatform: false, backend: false });
+    setFileName(null); setParsedRowsPreview(null); setImagePreview(null); setImageInfo(null); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
+    setFileStatus({ type: 'info', message: 'تم مسح كل المدخلات من جلسة التحليل الحالية. ذاكرة النظام المحفوظة لم تتأثر.' });
   };
 
   // Download Sample Templates
@@ -640,7 +659,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => handleDownloadSample('csv_meta')}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 text-xs font-semibold transition-all cursor-pointer"
@@ -654,6 +673,10 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             >
               <Download className="w-3.5 h-3.5 text-emerald-600" />
               <span>نموذج شيت (CSV)</span>
+            </button>
+            <button onClick={clearAllUploads} className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 transition-all hover:bg-rose-100 cursor-pointer" title="مسح كل الملفات والصور والنصوص من جلسة التحليل">
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>مسح الكل</span>
             </button>
           </div>
         </div>
@@ -920,6 +943,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
                 rows={9}
                 className="w-full bg-white border border-blue-300 rounded-lg p-3 text-xs font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-inner leading-relaxed"
               />
+              {directTextInput && <button type="button" onClick={() => { setDirectTextInput(''); setFileStatus({ type: 'info', message: 'تم حذف النص فقط من جلسة التحليل.' }); }} className="flex items-center gap-1 rounded text-[10px] font-bold text-rose-700 hover:text-rose-800"><Trash2 className="h-3.5 w-3.5" />حذف النص</button>}
             </div>
 
             {/* Action Bar */}
@@ -1013,6 +1037,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             placeholder="مثال: التقرير للفترة 1–7 أغسطس. حالة «تم الشحن» لا تعني تم التسليم. Purchase من Meta استرشادي فقط، وتم استبعاد الأوردرات التجريبية."
             className="w-full rounded-lg border border-violet-200 bg-white p-3 text-xs leading-relaxed text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
           />
+          {stagedPayload.data_context_note && <button type="button" onClick={() => setStagedPayload(previous => ({ ...previous, data_context_note: '' }))} className="mt-2 flex items-center gap-1 text-[10px] font-bold text-rose-700 hover:text-rose-800"><Trash2 className="h-3.5 w-3.5" />حذف الملحوظة</button>}
           <label className="mt-3 flex cursor-pointer items-center gap-2 text-[11px] font-bold text-violet-900">
             <input type="checkbox" checked={saveNoteToMemory} onChange={(event) => setSaveNoteToMemory(event.target.checked)} className="h-4 w-4 rounded border-violet-300 text-violet-600 focus:ring-violet-500" />
             احفظ هذه الملحوظة في ذاكرة النظام عند تشغيل التحليل
@@ -1134,7 +1159,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             className="mp-primary flex items-center gap-2 px-6 py-3 rounded-xl font-headline font-bold text-xs transition-all cursor-pointer active:scale-95 uppercase disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none"
           >
             <Zap className="w-4 h-4 fill-current text-white" />
-            <span>تنفيذ التشخيص الآن (Run Audit)</span>
+            <span>ابدأ التحليل في كل الـLayers</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -1159,10 +1184,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Ad Platforms Preview Card */}
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 font-headline uppercase flex items-center justify-between border-b border-slate-200 pb-2">
-              <span>بيانات المنصة الإعلانية (Meta Ads)</span>
-              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold">نشط Active</span>
-            </h4>
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2"><h4 className="text-xs font-bold text-slate-900 font-headline uppercase">بيانات المنصة الإعلانية (Meta Ads)</h4><button type="button" onClick={() => removeDataSource('adPlatform')} className="flex items-center gap-1 text-[10px] font-bold text-rose-700 hover:text-rose-800"><Trash2 className="h-3.5 w-3.5" />حذف التقرير</button></div>
 
             <div className="space-y-2 text-xs font-sans">
               {stagedPayload.ad_platforms.map((p, idx) => (
@@ -1415,10 +1437,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
 
           {/* Backend Sheet Preview Card */}
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 font-headline uppercase flex items-center justify-between border-b border-slate-200 pb-2">
-              <span>بيانات شيت الكول سنتر (Backend Sheet)</span>
-              <span className="text-[10px] font-mono text-slate-600 font-bold">مصدر الحقيقة الأول</span>
-            </h4>
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2"><h4 className="text-xs font-bold text-slate-900 font-headline uppercase">بيانات شيت الكول سنتر (Backend Sheet)</h4><button type="button" onClick={() => removeDataSource('backend')} className="flex items-center gap-1 text-[10px] font-bold text-rose-700 hover:text-rose-800"><Trash2 className="h-3.5 w-3.5" />حذف الشيت</button></div>
 
             <div className="space-y-2 text-xs font-sans">
               <div className="flex justify-between items-center p-2.5 bg-white rounded-lg border border-slate-200 text-slate-800">
