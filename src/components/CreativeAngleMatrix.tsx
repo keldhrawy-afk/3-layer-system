@@ -87,7 +87,7 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
     : allCreatives.filter(c => c.angle_category === selectedCategory);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xs space-y-6" dir="rtl">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-4" dir="rtl">
       {/* Header & Core Philosophy */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div>
@@ -130,7 +130,7 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
 
       {/* WINNING ANGLE BANNER & CONTENT TEAM DIRECTIVE */}
       {winningAngle && (
-        <div className="bg-gradient-to-br from-emerald-50/80 via-white to-blue-50/50 border-2 border-emerald-300/80 rounded-xl p-4.5 shadow-2xs space-y-3">
+        <div className="hidden bg-gradient-to-br from-emerald-50/80 via-white to-blue-50/50 border-2 border-emerald-300/80 rounded-xl p-4.5 shadow-2xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-2.5">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-600" />
@@ -187,13 +187,13 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
-          {creativeAngles.map((angle) => {
+        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
+          {creativeAngles.slice(0, 3).map((angle) => {
             const badge = getStatusBadge(angle.angle_status);
             return (
               <div 
                 key={angle.angle_category}
-                className={`rounded-xl border p-4.5 space-y-3.5 transition-all bg-white relative overflow-hidden ${
+                className={`rounded-xl border p-3 space-y-2.5 transition-all bg-white relative overflow-hidden ${
                   angle.is_winning_angle 
                     ? 'border-emerald-500 shadow-md ring-1 ring-emerald-500/20' 
                     : 'border-slate-200 hover:border-slate-300 shadow-2xs'
@@ -287,7 +287,7 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
       </div>
 
       {/* CLASSIFIED CREATIVES DRILL-DOWN TABLE */}
-      <div className="space-y-3 pt-2">
+      <div className="hidden space-y-3 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 pt-4">
           <div>
             <h3 className="text-xs font-bold text-slate-900 font-headline uppercase flex items-center gap-1.5">

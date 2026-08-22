@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   ArrowRight
 } from 'lucide-react';
+import { PerformanceAnalytical } from './PerformanceAnalytical';
 import { DiagnosticNoteCard } from './DiagnosticNoteCard';
 
 interface DiagnosisTabProps {
@@ -1209,6 +1210,8 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
           </div>
         </div>
       </div>
+
+      <PerformanceAnalytical layer={2} auditResult={auditResult} />
     </div>
   );
 };

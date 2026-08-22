@@ -3,6 +3,7 @@ import { AuditPayload, AuditResult, AdSetBreakdown, CreativeBreakdown } from '..
 import { Activity, AlertTriangle, CheckCircle2, ShieldAlert, Zap, MessageSquare, Target, Eye, DollarSign, Filter, Layers, Film, Users, ExternalLink } from 'lucide-react';
 import { DiagnosticNoteCard } from './DiagnosticNoteCard';
 import { CreativeAngleMatrix } from './CreativeAngleMatrix';
+import { PerformanceAnalytical } from './PerformanceAnalytical';
 
 interface SignalsTabProps {
   payload: AuditPayload;
@@ -607,9 +608,10 @@ export const SignalsTab: React.FC<SignalsTabProps> = ({ payload, auditResult }) 
             البيانات أعلاه تُستخدم حصرياً لقياس أداء الجذب والإشعارات قبل فتح الشات. حساب الصافي المالي والـ True CPA يعتمد بصرامة على أوردرات الشيت المباشرة فقط.
           </div>
         </div>
+
+        <PerformanceAnalytical layer={1} auditResult={auditResult} />
       </div>
     </div>
   );
 };
-
 
