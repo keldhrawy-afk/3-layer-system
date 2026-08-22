@@ -487,15 +487,6 @@ export interface DecisionToOutcomeRecord {
   confidence_calibration: string;
 }
 
-export interface ChatMessage {
-  id: string;
-  sender: 'user' | 'assistant';
-  text: string;
-  timestamp: string;
-  diagnosisBadge?: string;
-  actionPlan?: string[];
-}
-
 export type NavTab = 
   | 'overview' 
   | 'upload_files'

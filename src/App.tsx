@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   AuditPayload, 
   AuditResult, 
-  NavTab, 
-  ActionItem 
+  NavTab
 } from './types';
 import { run5LayerAudit, PRESET_PAYLOADS } from './lib/auditEngine';
 import { Header } from './components/Header';
@@ -13,7 +12,6 @@ import { HealthScoresGrid } from './components/HealthScoresGrid';
 import { ChatConversionMetricsDashboard } from './components/ChatConversionMetricsDashboard';
 import { GuardrailsAndActions } from './components/GuardrailsAndActions';
 import { PerformanceWorkflowBar } from './components/PerformanceWorkflowBar';
-import { AiAssistantDrawer } from './components/AiAssistantDrawer';
 import { FileUploadTab } from './components/FileUploadTab';
 import { SignalsTab } from './components/SignalsTab';
 import { DiagnosisTab } from './components/DiagnosisTab';
@@ -72,20 +70,6 @@ export default function App() {
     setCurrentPayload(newPayload);
     setHasLiveData(false);
     executeAudit(newPayload);
-  };
-
-  const handleApplyActionsFromAi = (newActionsText: string[]) => {
-    const newActionItems: ActionItem[] = newActionsText.map((action, idx) => ({
-      id: `ai_${Date.now()}_${idx}`,
-      action,
-      priority: idx === 0 ? 'HIGH' : 'MEDIUM',
-      category: idx === 0 ? 'Creative' : idx === 1 ? 'CRO' : 'Budget'
-    }));
-
-    setAuditResult((prev) => ({
-      ...prev,
-      action_queue: [...newActionItems, ...prev.action_queue]
-    }));
   };
 
   const handleWebhookAuditExecute = (
@@ -310,17 +294,6 @@ export default function App() {
           )}
 
         </main>
-
-        {/* Right Interactive AI Copilot Sidebar Panel */}
-        <aside className="w-full md:w-80 lg:w-96 p-4 border-l border-[#e7e1f2] bg-[#fdfcff] shrink-0">
-          <AiAssistantDrawer
-            payload={currentPayload}
-            auditResult={auditResult}
-            status={auditResult.system_status}
-            funnelLeak={auditResult.funnel_leak_location}
-            onApplyActionsFromAi={handleApplyActionsFromAi}
-          />
-        </aside>
       </div>
     </div>
   );
