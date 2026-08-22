@@ -427,7 +427,7 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
         </div>
 
         {/* The Two Metrics Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* Card 1: Qualified Rate % */}
           <div className="bg-slate-50/70 border border-emerald-300/80 rounded-xl p-5 space-y-4 shadow-2xs">
             <div className="flex items-start justify-between">
@@ -462,14 +462,14 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
             </div>
 
             {/* Mathematical Formula */}
-            <div className="p-3 bg-emerald-950 text-white rounded-lg border border-emerald-900 space-y-1.5">
-              <span className="text-[10px] font-mono text-emerald-300 font-bold uppercase block">المعادلة الحسابية المطبقة:</span>
-              <div className="bg-slate-900 p-2.5 rounded border border-emerald-800 font-mono text-xs text-center text-emerald-400 font-bold tracking-wide">
+            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200 space-y-1.5">
+              <span className="text-[10px] font-mono text-emerald-800 font-bold uppercase block">المعادلة الحسابية المطبقة:</span>
+              <div className="bg-white p-2.5 rounded border border-emerald-200 font-mono text-xs text-center text-emerald-800 font-bold tracking-wide break-words">
                 Qualified Rate = (عدد الشاتات الجادة والمطابقة ÷ إجمالي المحادثات المستقبلة) × 100
               </div>
-              <div className="flex justify-between items-center text-[11px] text-emerald-200 font-mono pt-1">
+              <div className="flex flex-col sm:flex-row justify-between gap-1 sm:items-center text-[11px] text-emerald-800 font-mono pt-1">
                 <span>تطبيق الأرقام: ({((payload.chat_data?.qualified_leads_count || 860)).toLocaleString()} ÷ {((payload.chat_data?.actual_received_chats || 1308)).toLocaleString()}) × 100</span>
-                <span className="text-emerald-300 font-bold">= {(((payload.chat_data?.qualified_leads_count || 860) / Math.max(1, payload.chat_data?.actual_received_chats || 1308)) * 100).toFixed(1)}%</span>
+                <span className="text-emerald-700 font-bold">= {(((payload.chat_data?.qualified_leads_count || 860) / Math.max(1, payload.chat_data?.actual_received_chats || 1308)) * 100).toFixed(1)}%</span>
               </div>
             </div>
 
@@ -516,14 +516,14 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
             </div>
 
             {/* Mathematical Formula */}
-            <div className="p-3 bg-slate-950 text-white rounded-lg border border-slate-900 space-y-1.5">
-              <span className="text-[10px] font-mono text-amber-300 font-bold uppercase block">المعادلة الحسابية المطبقة:</span>
-              <div className="bg-slate-900 p-2.5 rounded border border-slate-800 font-mono text-xs text-center text-amber-400 font-bold tracking-wide">
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 space-y-1.5">
+              <span className="text-[10px] font-mono text-amber-800 font-bold uppercase block">المعادلة الحسابية المطبقة:</span>
+              <div className="bg-white p-2.5 rounded border border-amber-200 font-mono text-xs text-center text-amber-800 font-bold tracking-wide break-words">
                 Chat CVR = (عدد الأوردرات المقفولة فعلياً ÷ إجمالي المحادثات المستقبلة) × 100
               </div>
-              <div className="flex justify-between items-center text-[11px] text-amber-200 font-mono pt-1">
+              <div className="flex flex-col sm:flex-row justify-between gap-1 sm:items-center text-[11px] text-amber-800 font-mono pt-1">
                 <span>تطبيق الأرقام: ({((payload.chat_data?.closed_orders_count || confirmed)).toLocaleString()} ÷ {((payload.chat_data?.actual_received_chats || 1308)).toLocaleString()}) × 100</span>
-                <span className="text-amber-300 font-bold">= {(((payload.chat_data?.closed_orders_count || confirmed) / Math.max(1, payload.chat_data?.actual_received_chats || 1308)) * 100).toFixed(1)}%</span>
+                <span className="text-amber-700 font-bold">= {(((payload.chat_data?.closed_orders_count || confirmed) / Math.max(1, payload.chat_data?.actual_received_chats || 1308)) * 100).toFixed(1)}%</span>
               </div>
             </div>
 
@@ -583,7 +583,7 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
           </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* VBP SCORE CARD */}
           <div className="bg-slate-50/70 border border-indigo-300/80 rounded-xl p-5 space-y-4 shadow-2xs">
             <div className="flex items-start justify-between">
@@ -698,19 +698,19 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
             </div>
 
             {/* Mathematical Formula Box */}
-            <div className="p-3 bg-purple-950 text-white rounded-lg border border-purple-900 space-y-1.5">
-              <span className="text-[10px] font-mono text-purple-300 font-bold uppercase block">المعادلة الرياضية:</span>
-              <div className="bg-slate-900 p-2.5 rounded border border-purple-800 font-mono text-xs text-center text-purple-300 font-bold tracking-wide">
+            <div className="p-3 bg-violet-50 rounded-lg border border-violet-200 space-y-1.5">
+              <span className="text-[10px] font-mono text-violet-800 font-bold uppercase block">المعادلة الرياضية:</span>
+              <div className="bg-white p-2.5 rounded border border-violet-200 font-mono text-xs text-center text-violet-800 font-bold tracking-wide break-words">
                 AOV = إجمالي إيرادات المبيعات ÷ عدد الأوردرات المقفولة
               </div>
-              <div className="flex justify-between items-center text-[11px] text-purple-200 font-mono pt-1">
+              <div className="flex flex-col sm:flex-row justify-between gap-1 sm:items-center text-[11px] text-violet-800 font-mono pt-1">
                 <span>تطبيق الأرقام: ({((payload.backend_sheet.average_order_value || 650) * confirmed).toLocaleString()} ج.م ÷ {confirmed} أوردر)</span>
-                <span className="text-purple-300 font-bold">= {l2?.aov_audit?.aov_value ?? 650} ج.م</span>
+                <span className="text-violet-700 font-bold">= {l2?.aov_audit?.aov_value ?? 650} ج.م</span>
               </div>
             </div>
 
             {/* Chat-level Audit Logic: Upselling & Cross-selling */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-sans">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 text-xs font-sans">
               {/* Upselling Evaluation */}
               <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5 shadow-2xs">
                 <div className="flex items-center justify-between text-purple-900 font-bold font-headline">

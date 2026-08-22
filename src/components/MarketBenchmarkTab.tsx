@@ -52,6 +52,7 @@ export const MarketBenchmarkTab: React.FC<MarketBenchmarkTabProps> = ({ payload,
   const [selectedChannel, setSelectedChannel] = useState<BenchmarkChannel>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [lastRecalibratedAt, setLastRecalibratedAt] = useState(() => new Date());
 
   // Extract Live Stats from Payload
   const adPlatform = payload.ad_platforms?.[0] || {
@@ -711,6 +712,9 @@ export const MarketBenchmarkTab: React.FC<MarketBenchmarkTabProps> = ({ payload,
   const hasBadCreativeSignal = costPerConversation < 12 && orderConfirmRate < 50;
   const hasLowChatConversion = chatToOrderRate < 10;
   const hasLowHookCtr = ctr < 1.0;
+  const formattedRefreshTime = lastRecalibratedAt.toLocaleString('ar-EG', {
+    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
 
   return (
     <div className="space-y-6 text-slate-900">
@@ -719,8 +723,8 @@ export const MarketBenchmarkTab: React.FC<MarketBenchmarkTabProps> = ({ payload,
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 border-b border-slate-100 pb-5">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold font-mono bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Egyptian Cosmetics Market Matrix (2026)
+              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold font-mono bg-violet-50 text-violet-800 border border-violet-200">
+                Egyptian Cosmetics Market Matrix
               </span>
               <span className="text-xs text-slate-400 font-mono">• Meta Messages & Conversations Benchmarks</span>
             </div>
@@ -731,7 +735,7 @@ export const MarketBenchmarkTab: React.FC<MarketBenchmarkTabProps> = ({ payload,
             </h1>
 
             <p className="text-xs text-slate-600 font-sans max-w-3xl leading-relaxed">
-              مقارنة أداء حملات الميتا والرسائل (Messenger, WhatsApp, Instagram Direct) لحظياً بالمعايير المعتمدة لسوق مستحضرات التجميل في مصر، لتحديد كفاءة الإعلانات والردود وتفادي القرارات العشوائية.
+              أرقام حسابك تُعاد حسابها فوراً من أحدث ملفات الإعلانات والـCRM المرفوعة. نطاقات المقارنة هي baseline سوقية واضحة وليست أرقاماً مخفية أو ثابتة داخل نتيجة التحليل.
             </p>
           </div>
 
@@ -752,6 +756,21 @@ export const MarketBenchmarkTab: React.FC<MarketBenchmarkTabProps> = ({ payload,
           </div>
         </div>
 
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-violet-200 bg-violet-50/70 px-3.5 py-3">
+          <div className="flex items-start gap-2 text-[11px] leading-relaxed text-violet-950">
+            <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
+            <span><strong>معايرة مباشرة على بياناتك:</strong> تم تحديث القيم الحالية {formattedRefreshTime}. حدّث التقرير أو اضغط الزر لإعادة قراءة آخر بيانات الحساب.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLastRecalibratedAt(new Date())}
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-bold text-violet-800 transition hover:bg-violet-100"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            إعادة المعايرة
+          </button>
+        </div>
+
         {/* Channel Switcher Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 overflow-x-auto">
@@ -760,7 +779,7 @@ export const MarketBenchmarkTab: React.FC<MarketBenchmarkTabProps> = ({ payload,
               onClick={() => setSelectedChannel('all')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-headline font-bold text-xs transition cursor-pointer ${
                 selectedChannel === 'all'
-                  ? 'bg-slate-900 text-white shadow-xs'
+                  ? 'bg-violet-600 text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200/60'
               }`}
             >

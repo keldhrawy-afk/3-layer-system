@@ -109,18 +109,18 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
         </div>
 
         {winningAngle && (
-          <div className="bg-gradient-to-r from-emerald-900 to-slate-900 text-white p-3.5 rounded-xl border border-emerald-500/40 shadow-sm shrink-0 flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/20 rounded-lg border border-emerald-400/30 text-emerald-400">
+          <div className="bg-gradient-to-br from-emerald-50 via-white to-violet-50 p-3.5 rounded-xl border border-emerald-200 shadow-sm shrink-0 flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 rounded-lg border border-emerald-200 text-emerald-700">
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">
                 مؤشر الزاوية الرابحة (Winning Angle)
               </span>
-              <span className="text-sm font-black font-headline text-white block">
+              <span className="text-sm font-black font-headline text-slate-900 block">
                 {winningAngle.label_ar}
               </span>
-              <span className="text-[11px] text-emerald-200 font-mono block">
+              <span className="text-[11px] text-emerald-800 font-mono block">
                 CVR: {winningAngle.cvr}% • Blended CPA: {winningAngle.blended_cpa} ج.م
               </span>
             </div>
@@ -142,7 +142,7 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
               توجيه الميزانية والإنتاج 🔥
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 text-xs">
             <div className="p-3 bg-white border border-emerald-200 rounded-lg space-y-1">
               <span className="text-[10px] text-slate-500 font-headline block">الزاوية المحققة لأعلى مبيعات</span>
               <div className="font-black text-slate-900 text-sm font-headline flex items-center gap-1.5">
@@ -165,9 +165,9 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
               </p>
             </div>
 
-            <div className="p-3 bg-emerald-900 text-white rounded-lg space-y-1">
-              <span className="text-[10px] text-emerald-300 font-headline block">أمر التشغيل لـ Content Team</span>
-              <p className="text-[11px] text-emerald-50 leading-relaxed font-medium">
+            <div className="p-3 bg-violet-50 border border-violet-200 text-slate-900 rounded-lg space-y-1">
+              <span className="text-[10px] text-violet-800 font-headline block">أمر التشغيل لـ Content Team</span>
+              <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
                 {winningAngle.content_team_directive}
               </p>
             </div>
@@ -187,7 +187,7 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
           {creativeAngles.map((angle) => {
             const badge = getStatusBadge(angle.angle_status);
             return (
@@ -271,12 +271,12 @@ export const CreativeAngleMatrix: React.FC<CreativeAngleMatrixProps> = ({
                 </div>
 
                 {/* Content Directive Box */}
-                <div className="p-2.5 bg-slate-900 text-slate-200 rounded-lg text-[11px] leading-relaxed">
-                  <span className="text-amber-300 font-bold block mb-0.5 flex items-center gap-1 font-headline">
-                    <TrendingUp className="w-3 h-3" />
+                <div className="p-2.5 bg-violet-50 border border-violet-200 text-slate-700 rounded-lg text-[11px] leading-relaxed">
+                  <span className="text-violet-800 font-bold block mb-0.5 flex items-center gap-1 font-headline">
+                    <TrendingUp className="w-3 h-3 text-violet-600" />
                     <span>توجيه الإنتاج:</span>
                   </span>
-                  <span className="text-slate-300">
+                  <span className="text-slate-700">
                     {angle.content_team_directive}
                   </span>
                 </div>

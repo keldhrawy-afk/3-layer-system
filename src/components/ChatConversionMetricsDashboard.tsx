@@ -215,7 +215,7 @@ export const ChatConversionMetricsDashboard: React.FC<ChatConversionMetricsDashb
       </div>
 
       {/* THE TWO CORE MATHEMATICAL FORMULA CARDS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         
         {/* CARD 1: QUALIFIED RATE % */}
         <div className="bg-slate-50/70 border border-emerald-300/80 rounded-xl p-5 space-y-4 shadow-2xs flex flex-col justify-between">
@@ -261,14 +261,14 @@ export const ChatConversionMetricsDashboard: React.FC<ChatConversionMetricsDashb
             </div>
 
             {/* Mathematical Formula Box */}
-            <div className="p-3 bg-emerald-950 text-white rounded-lg border border-emerald-900 space-y-2">
-              <span className="text-[10px] font-mono text-emerald-300 font-bold uppercase block">المعادلة الرياضية المطبقة:</span>
-              <div className="bg-slate-900 p-2.5 rounded border border-emerald-800 font-mono text-xs text-center text-emerald-400 font-bold tracking-wide">
+            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200 space-y-2">
+              <span className="text-[10px] font-mono text-emerald-800 font-bold uppercase block">المعادلة الرياضية المطبقة:</span>
+              <div className="bg-white p-2.5 rounded border border-emerald-200 font-mono text-xs text-center text-emerald-800 font-bold tracking-wide break-words">
                 Qualified Rate = (عدد الشاتات الجادة والمطابقة ÷ إجمالي المحادثات المستقبلة) × 100
               </div>
-              <div className="flex justify-between items-center text-[11px] text-emerald-200 font-mono pt-1">
+              <div className="flex flex-col sm:flex-row justify-between gap-1 sm:items-center text-[11px] text-emerald-800 font-mono pt-1">
                 <span>تطبيق الأرقام: ({qualifiedLeadsCount.toLocaleString()} ÷ {actualReceivedChats.toLocaleString()}) × 100</span>
-                <span className="text-emerald-300 font-bold text-xs">= {qualifiedRate}%</span>
+                <span className="text-emerald-700 font-bold text-xs">= {qualifiedRate}%</span>
               </div>
             </div>
           </div>
@@ -326,14 +326,14 @@ export const ChatConversionMetricsDashboard: React.FC<ChatConversionMetricsDashb
             </div>
 
             {/* Mathematical Formula Box */}
-            <div className="p-3 bg-slate-950 text-white rounded-lg border border-slate-900 space-y-2">
-              <span className="text-[10px] font-mono text-amber-300 font-bold uppercase block">المعادلة الرياضية المطبقة:</span>
-              <div className="bg-slate-900 p-2.5 rounded border border-slate-800 font-mono text-xs text-center text-amber-400 font-bold tracking-wide">
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 space-y-2">
+              <span className="text-[10px] font-mono text-amber-800 font-bold uppercase block">المعادلة الرياضية المطبقة:</span>
+              <div className="bg-white p-2.5 rounded border border-amber-200 font-mono text-xs text-center text-amber-800 font-bold tracking-wide break-words">
                 Chat CVR = (عدد الأوردرات المقفولة فعلياً ÷ إجمالي المحادثات المستقبلة) × 100
               </div>
-              <div className="flex justify-between items-center text-[11px] text-amber-200 font-mono pt-1">
+              <div className="flex flex-col sm:flex-row justify-between gap-1 sm:items-center text-[11px] text-amber-800 font-mono pt-1">
                 <span>تطبيق الأرقام: ({closedOrdersCount.toLocaleString()} ÷ {actualReceivedChats.toLocaleString()}) × 100</span>
-                <span className="text-amber-300 font-bold text-xs">= {chatCvr}%</span>
+                <span className="text-amber-700 font-bold text-xs">= {chatCvr}%</span>
               </div>
             </div>
           </div>

@@ -593,12 +593,12 @@ export const Layer3DiagnosticEngineTab: React.FC<Layer3DiagnosticEngineTabProps>
                 </p>
               </div>
 
-              <div className="p-3.5 bg-slate-900 text-white rounded-xl border border-slate-800 text-xs font-sans leading-relaxed space-y-2 shadow-2xs">
-                <div className="font-bold text-amber-300 flex items-center gap-1.5 text-xs">
-                  <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+              <div className="p-3.5 bg-violet-50 text-slate-900 rounded-xl border border-violet-200 text-xs font-sans leading-relaxed space-y-2 shadow-2xs">
+                <div className="font-bold text-violet-800 flex items-center gap-1.5 text-xs">
+                  <ShieldAlert className="w-3.5 h-3.5 text-violet-600" />
                   <span>القرار الحاسم الصارم:</span>
                 </div>
-                <p className="text-[11px] md:text-xs leading-relaxed text-slate-100">
+                <p className="text-[11px] md:text-xs leading-relaxed text-slate-700">
                   {diagnosis.adFate}
                 </p>
               </div>
