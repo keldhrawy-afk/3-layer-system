@@ -186,6 +186,7 @@ export default function App() {
           آخر Run: {new Date(auditResult.analysis_inputs.run_at).toLocaleString('ar-EG')} — ملفات: {auditResult.analysis_inputs.data_files.length} • صور: {auditResult.analysis_inputs.creative_images.length + auditResult.analysis_inputs.chat_images.length} • نص: {auditResult.analysis_inputs.has_text ? 'نعم' : 'لا'} • ملحوظة: {auditResult.analysis_inputs.has_note ? 'نعم' : 'لا'}
         </div>
       )}
+      {hasLiveData && (auditResult.system_status !== 'GREEN_MOVE' || (auditResult.analysis_inputs?.data_files.length || 0) === 0) && <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-bold text-amber-900" dir="rtl">تنبيه النظام: {auditResult.status_reason} — افتح AI Data Assistant في القائمة الجانبية لمعرفة ما يحتاجه التحليل.</div>}
 
       {/* Main Workspace Body */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">

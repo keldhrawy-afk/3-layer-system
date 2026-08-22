@@ -22,7 +22,8 @@ import {
   HelpCircle,
   BrainCircuit,
   FileWarning,
-  ChevronDown
+  ChevronDown,
+  Send
 } from 'lucide-react';
 
 interface SidebarNavProps {
@@ -47,6 +48,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   // Stop Light Guardrail State (صفحة 32) - تلقائي بناءً على الأرقام الحقيقية
   const stopLightStatus = autoStopLightStatus;
   const [assistantOpen, setAssistantOpen] = useState(true);
+  const [assistantQuestion, setAssistantQuestion] = useState('');
+  const [assistantMessages, setAssistantMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
   const platform = payload.ad_platforms[0];
   const inputs = auditResult.analysis_inputs;
   const missingMetrics = [
@@ -59,6 +62,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     !inputs?.creative_images.length && 'صورة أو فيديو الإعلان',
     !inputs?.has_text && 'سياق كتابي أو تفسير للداتا'
   ];
+  const answerAssistant = () => {
+    const question = assistantQuestion.trim();
+    if (!question) return;
+    const normalized = question.toLowerCase();
+    const action = auditResult.action_queue?.[0]?.action || 'ارفع أو اكتب السياق المطلوب ثم شغّل Run من جديد.';
+    const missing = missingMetrics.length ? `أهم النواقص الآن: ${missingMetrics.slice(0, 3).join('، ')}.` : 'لا توجد نواقص أساسية في بيانات آخر Run.';
+    const response = /ناقص|محتاج|ارفع/.test(normalized) ? `${missing} ${action}`
+      : /قرار|اعمل|حل|تصلح/.test(normalized) ? `قرار النظام الحالي: ${auditResult.status_reason}. الخطوة التالية: ${action}`
+      : /ربح|هامش|roas|cpa/.test(normalized) ? `True CPA: ${auditResult.financial_economics?.true_cpa ?? 0} ج.م، هامش المساهمة: ${auditResult.financial_economics?.contribution_margin ?? 0} ج.م. ${missing}`
+      : `من آخر Run: ${auditResult.diagnosis_summary}. ${missing}`;
+    setAssistantMessages(previous => [...previous, { role: 'user', text: question }, { role: 'assistant', text: response }]);
+    setAssistantQuestion('');
+  };
 
   const primaryNavItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'لوحة التحكم الرئيسية', icon: <Home className="w-4 h-4" /> },
@@ -181,6 +197,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {assistantOpen && <>
           <p className="mt-2 text-[10px] leading-relaxed text-slate-600">يراجع آخر Run وكل مدخلات النظام ويحدد ما لا يمكن تحليله بدقة بسبب نقص الداتا.</p>
           {missingMetrics.length ? <div className="mt-2 space-y-1.5"><p className="flex items-center gap-1 text-[10px] font-bold text-amber-800"><FileWarning className="h-3.5 w-3.5" />ناقص {missingMetrics.length} مؤشرات</p>{missingMetrics.slice(0, 4).map(metric => <p key={metric} className="rounded-md bg-white px-2 py-1 text-[10px] text-slate-700">• {metric}</p>)}{missingMetrics.length > 4 && <p className="text-[10px] text-slate-500">+ {missingMetrics.length - 4} عناصر أخرى</p>}<button type="button" onClick={() => onSelectTab('upload_files')} className="mt-1 w-full rounded-md bg-violet-600 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-violet-700">أضف داتا أو توضيح</button></div> : <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1.5 text-[10px] font-bold text-emerald-800">الداتا الأساسية متاحة للتحليل الحالي.</p>}
+          {assistantMessages.length > 0 && <div className="mt-2 max-h-32 space-y-1 overflow-y-auto border-t border-violet-100 pt-2">{assistantMessages.map((message, index) => <p key={index} className={`rounded-md px-2 py-1 text-[10px] leading-relaxed ${message.role === 'user' ? 'mr-3 bg-violet-600 text-white' : 'bg-white text-slate-700'}`}>{message.text}</p>)}</div>}
+          <div className="mt-2 flex gap-1"><input value={assistantQuestion} onChange={(event) => setAssistantQuestion(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && answerAssistant()} placeholder="اسأل عن نقص أو قرار…" className="min-w-0 flex-1 rounded-md border border-violet-200 bg-white px-2 py-1.5 text-[10px] outline-none focus:border-violet-500" /><button type="button" onClick={answerAssistant} className="rounded-md bg-violet-600 px-2 text-white hover:bg-violet-700" aria-label="إرسال"><Send className="h-3.5 w-3.5" /></button></div>
         </>}
       </div>
 
