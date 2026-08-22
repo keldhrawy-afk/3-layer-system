@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
+:root {
+  --mp-ink: #20123a;
+  --mp-muted: #716b7d;
+  --mp-violet: #6d45ff;
+  --mp-violet-dark: #4d2bc5;
+  --mp-lilac: #f0edff;
+  --mp-canvas: #fbfaff;
+  --mp-border: #e7e1f2;
+}
+
 @layer base {
   body {
-    background-color: #ffffff;
-    color: #0f172a;
-    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    background-color: var(--mp-canvas);
+    color: var(--mp-ink);
+    font-family: 'Alexandria', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6, .font-headline {
-    font-family: 'Tajawal', 'Almarai', 'Cairo', sans-serif;
+    font-family: 'Alexandria', system-ui, sans-serif;
     font-weight: 700;
   }
 }
 
 .font-cairo {
-  font-family: 'Cairo', sans-serif;
+  font-family: 'Alexandria', sans-serif;
 }
 
 .font-headline {
-  font-family: 'Tajawal', 'Almarai', 'Cairo', sans-serif;
+  font-family: 'Alexandria', sans-serif;
   font-weight: 700;
+}
+
+.font-mono {
+  font-family: 'Manrope', 'Alexandria', sans-serif;
+}
+
+.mp-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--mp-border);
+  box-shadow: 0 12px 32px rgba(57, 36, 100, 0.06);
+}
+
+.mp-primary {
+  background: var(--mp-violet);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(109, 69, 255, 0.22);
+}
+
+.mp-primary:hover {
+  background: var(--mp-violet-dark);
+}
+
+.mp-page-title {
+  letter-spacing: -0.03em;
 }
 
 .glow-emerald {
@@ -46,4 +80,3 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-

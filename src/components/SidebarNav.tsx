@@ -10,7 +10,6 @@ import {
   Gauge, 
   ShieldAlert, 
   BookOpen, 
-  Settings,
   Layers,
   Archive,
   Download,
@@ -52,11 +51,10 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     { id: 'decisions', label: 'مصفوفة القرارات (Decision Matrix)', icon: <CheckSquare className="w-4 h-4" /> },
     { id: 'playbooks', label: 'خطط العلاج والتوصيات', icon: <BookOpen className="w-4 h-4" /> },
     { id: 'snapshot_vault', label: 'الأرشفة الأسبوعية والـ YoY (Vault)', icon: <Archive className="w-4 h-4" /> },
-    { id: 'settings', label: 'إعدادات النظام', icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
-    <aside className="w-full md:w-64 bg-white border-l md:border-l-0 md:border-r border-slate-200 p-3 flex flex-row md:flex-col gap-1.5 shrink-0 overflow-x-auto md:overflow-x-visible shadow-2xs">
+    <aside className="w-full md:w-64 bg-[#fdfcff] border-l md:border-l-0 md:border-r border-[#e7e1f2] p-3 flex flex-row md:flex-col gap-1.5 shrink-0 overflow-x-auto md:overflow-x-visible">
       {/* 2. Stop Lights Guardrails (لمبة أمان أعلى الشاشة الجانبية - صفحة 32) */}
       <div className="hidden md:block mb-2">
         <div 
@@ -155,8 +153,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
       </div>
 
-      <div className="text-[11px] font-bold font-headline text-slate-500 px-3 py-2 hidden md:block border-b border-slate-100 mb-1">
-        أقسام النظام الرئيسية
+      <div className="text-[10px] font-bold font-mono tracking-[0.12em] text-[#8b8497] px-3 py-2 hidden md:block border-b border-[#eeeaf5] mb-1 uppercase">
+        Workspace
       </div>
 
       {primaryNavItems.map((item) => {
@@ -198,14 +196,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-headline font-bold transition-all cursor-pointer whitespace-nowrap ${
                 isActive
                   ? isVault
-                    ? 'bg-indigo-700 text-white shadow-xs'
-                    : 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-[#4d2bc5] text-white shadow-[0_8px_18px_rgba(109,69,255,0.2)]'
+                    : 'bg-[#6d45ff] text-white shadow-[0_8px_18px_rgba(109,69,255,0.2)]'
                   : isVault
-                  ? 'text-indigo-900 hover:text-indigo-950 hover:bg-indigo-50/60 border border-indigo-100'
-                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-transparent'
+                  ? 'text-[#4d2bc5] hover:text-[#3e20ae] hover:bg-[#f0edff] border border-[#e5ddff]'
+                  : 'text-[#5d5668] hover:text-[#20123a] hover:bg-[#f3f0fa] border border-transparent'
               }`}
             >
-              <span className={isActive ? 'text-white' : isVault ? 'text-indigo-600' : 'text-slate-500'}>
+              <span className={isActive ? 'text-white' : isVault ? 'text-[#6d45ff]' : 'text-[#8b8497]'}>
                 {item.icon}
               </span>
               <span className="tracking-normal">{item.label}</span>
@@ -216,6 +214,4 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     </aside>
   );
 };
-
-
 

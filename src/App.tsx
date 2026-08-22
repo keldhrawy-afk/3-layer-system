@@ -25,7 +25,8 @@ import { MarketBenchmarkTab } from './components/MarketBenchmarkTab';
 import { DecisionMatrixTab } from './components/DecisionMatrixTab';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('overview');
+  // يبدأ المستخدم من مسار الإدخال حتى لا يخلط الأرقام التجريبية بنتائج متجره.
+  const [activeTab, setActiveTab] = useState<NavTab>('upload_files');
   const [selectedPresetIndex, setSelectedPresetIndex] = useState(0);
   const [currentPayload, setCurrentPayload] = useState<AuditPayload>(
     PRESET_PAYLOADS[0].payload
@@ -36,6 +37,7 @@ export default function App() {
   );
 
   const [isAuditing, setIsAuditing] = useState(false);
+  const [hasLiveData, setHasLiveData] = useState(false);
 
   // Trigger audit call to backend Express endpoint or local calculation
   const executeAudit = async (payloadToAudit: AuditPayload) => {
@@ -68,6 +70,7 @@ export default function App() {
     setSelectedPresetIndex(idx);
     const newPayload = PRESET_PAYLOADS[idx].payload;
     setCurrentPayload(newPayload);
+    setHasLiveData(false);
     executeAudit(newPayload);
   };
 
@@ -91,6 +94,7 @@ export default function App() {
   ) => {
     setCurrentPayload(updatedPayload);
     setAuditResult(newResult);
+    setHasLiveData(true);
   };
 
   // حساب حالة إشارة المرور تلقائياً بناءً على الأرقام الحقيقية (صفحة 32)
@@ -126,7 +130,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col antialiased">
+    <div className="min-h-screen bg-[#fbfaff] text-[#20123a] font-sans flex flex-col antialiased">
       {/* Top Navigation & App Header */}
       <Header
         storeName={currentPayload.store_name || 'متجر التجارة الإلكترونية'}
@@ -137,6 +141,7 @@ export default function App() {
         onSelectPreset={handleSelectPreset}
         presets={PRESET_PAYLOADS}
         isAuditing={isAuditing}
+        isDemoData={!hasLiveData}
       />
 
       {/* Main Workspace Body */}
@@ -150,9 +155,23 @@ export default function App() {
         />
 
         {/* Center Dashboard View Area */}
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto max-w-[1600px] mx-auto w-full space-y-6">
+        <main className="flex-1 p-4 lg:p-7 overflow-y-auto max-w-[1600px] mx-auto w-full space-y-6">
           {activeTab === 'overview' && (
             <>
+              {!hasLiveData && (
+                <section className="rounded-[1.5rem] border border-[#ddd5ff] bg-gradient-to-l from-[#ede9ff] to-white p-6 shadow-[0_12px_32px_rgba(57,36,100,0.07)]">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold text-[#6340d8] mb-1">ابدأ من بياناتك، وليس من الأرقام التجريبية</p>
+                      <h2 className="text-base font-black font-headline text-[#20123a]">من الداتا إلى قرار واضح في دقائق</h2>
+                      <p className="text-xs text-[#716b7d] mt-1">ارفع تقرير الإعلانات وشيت الـCRM، راجع الفترة، ثم احصل على التشخيص وخطة العمل.</p>
+                    </div>
+                    <button onClick={() => setActiveTab('upload_files')} className="mp-primary shrink-0 rounded-xl px-5 py-3 text-xs font-bold transition-colors">
+                      ابدأ رفع البيانات ←
+                    </button>
+                  </div>
+                </section>
+              )}
               {/* Top KPI Summary Row */}
               <TopKpiCards financials={auditResult?.financial_economics} />
 
@@ -290,29 +309,10 @@ export default function App() {
             <DecisionMatrixTab payload={currentPayload} auditResult={auditResult} />
           )}
 
-          {activeTab === 'settings' && (
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
-              <h2 className="text-lg font-bold text-slate-900 font-headline">إعدادات وقواعد الفحص والتأكيد</h2>
-              <p className="text-xs text-slate-600 font-sans">
-                ضبط قيم الحدود المسموح بها ونسب تأكيد الأوردرات ومعايير السكيل التلقائي للمتجر.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 text-xs font-sans">
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                  <span className="font-bold text-slate-900 block mb-1">نسبة الخطاف الإعلاني (Hook Rate)</span>
-                  <span className="text-slate-600">الحد الأدنى: 25% (يتم تنبيه تسريب ما قبل الكليك إذا قل عن ذلك)</span>
-                </div>
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                  <span className="font-bold text-slate-900 block mb-1">نسبة تأكيد الطلبات (SLA)</span>
-                  <span className="text-slate-600">الحد الأدنى: 70% (يتم تنبيه تسريب الكول سنتر أو الشيت إذا قل عن ذلك)</span>
-                </div>
-              </div>
-            </div>
-          )}
         </main>
 
         {/* Right Interactive AI Copilot Sidebar Panel */}
-        <aside className="w-full md:w-80 lg:w-96 p-4 border-l border-slate-200 bg-white shrink-0 shadow-2xs">
+        <aside className="w-full md:w-80 lg:w-96 p-4 border-l border-[#e7e1f2] bg-[#fdfcff] shrink-0">
           <AiAssistantDrawer
             payload={currentPayload}
             auditResult={auditResult}
@@ -325,4 +325,3 @@ export default function App() {
     </div>
   );
 }
-

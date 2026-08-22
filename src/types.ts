@@ -507,5 +507,4 @@ export type NavTab =
   | 'benchmark'
   | 'guardrails' 
   | 'playbooks' 
-  | 'snapshot_vault'
-  | 'settings';
+  | 'snapshot_vault';

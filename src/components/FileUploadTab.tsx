@@ -70,17 +70,15 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const [imageInfo, setImageInfo] = useState<{ name: string; size: string } | null>(null);
 
   // Chat evaluation screenshots (5-10 images)
-  const [chatScreenshots, setChatScreenshots] = useState<{ id: string; name: string; url: string; note: string }[]>([
-    { id: '1', name: 'نموذج 1: اعتذار عن السعر بدون بناء قيمة', url: 'https://images.unsplash.com/photo-1611746872915-64382b5c76da?w=400&auto=format&fit=crop&q=80', note: 'العميل يسأل عن السعر، السيلز أرسل الرقم فوراً بدون توضيح الفوائد.' },
-    { id: '2', name: 'نموذج 2: تأخير الرد لأكثر من 20 دقيقة', url: 'https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=400&auto=format&fit=crop&q=80', note: 'العميل كتب "موجود؟"، السيلز رد بعد 28 دقيقة فانسحب العميل.' },
-    { id: '3', name: 'نموذج 3: عدم المتابعة بعد الاعتراض', url: 'https://images.unsplash.com/photo-1587560699334-bea93391dcef?w=400&auto=format&fit=crop&q=80', note: 'العميل كتب "هفكر وأرد"، ولم يتم إرسال أي رسالة متابعة بعد 24 ساعة.' },
-    { id: '4', name: 'نموذج 4: إغلاق ناجح من أحمد مصطفى', url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&auto=format&fit=crop&q=80', note: 'تقديم المميزات، إرسال فيديو معاينة، إغلاق الأوردر بسلاسة.' },
-    { id: '5', name: 'نموذج 5: استفسار عن مصاريف الشحن', url: 'https://images.unsplash.com/photo-1556742049-0a674d01b17b?w=400&auto=format&fit=crop&q=80', note: 'العميل تردد عند معرفة سعر الشحن مرتفع.' }
-  ]);
+  const [chatScreenshots, setChatScreenshots] = useState<{ id: string; name: string; url: string; note: string }[]>([]);
 
   // Staging payload state before applying audit
   const [stagedPayload, setStagedPayload] = useState<AuditPayload>(currentPayload);
   const [parsedRowsPreview, setParsedRowsPreview] = useState<Record<string, any>[] | null>(null);
+  const [uploadedSources, setUploadedSources] = useState({ adPlatform: false, backend: false });
+  const [periodStart, setPeriodStart] = useState('');
+  const [periodEnd, setPeriodEnd] = useState('');
+  const [auditCompleted, setAuditCompleted] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,18 +225,15 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         totalRev += findVal('revenue', 'value', 'إيرادات', 'القيمة');
       });
 
-      if (total3Sec === 0 && totalImpressions > 0) total3Sec = Math.round(totalImpressions * 0.28);
-      if (total75Pct === 0 && totalImpressions > 0) total75Pct = Math.round(totalImpressions * 0.12);
-
       const updatedAdPlatform: AdPlatformData = {
         platform: 'Meta',
-        impressions: totalImpressions || 450000,
-        spend: totalSpend || 48500,
-        clicks: totalClicks || 9500,
-        three_sec_views: total3Sec || 125000,
-        seventy_five_percent_views: total75Pct || 22000,
-        reported_orders: totalOrders || 145,
-        reported_revenue: totalRev || 172500,
+        impressions: totalImpressions,
+        spend: totalSpend,
+        clicks: totalClicks,
+        three_sec_views: total3Sec,
+        seventy_five_percent_views: total75Pct,
+        reported_orders: totalOrders,
+        reported_revenue: totalRev,
         campaign_age_hours: 120,
         budget_scaled_24h_pct: 10
       };
@@ -248,9 +243,13 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         ad_platforms: [updatedAdPlatform]
       }));
 
+      setUploadedSources(prev => ({ ...prev, adPlatform: totalSpend > 0 && totalImpressions > 0 && totalClicks > 0 }));
+
       setFileStatus({
-        type: 'success',
-        message: `تم تحليل ${rows.length} صف من تقرير المنصات بنجاح! الصرف: ${totalSpend.toLocaleString()} ج.م | الظهور: ${totalImpressions.toLocaleString()}`
+        type: totalSpend > 0 && totalImpressions > 0 && totalClicks > 0 ? 'success' : 'error',
+        message: totalSpend > 0 && totalImpressions > 0 && totalClicks > 0
+          ? `تم تحليل ${rows.length} صف من تقرير المنصات بنجاح! الصرف: ${totalSpend.toLocaleString()} ج.م | الظهور: ${totalImpressions.toLocaleString()}`
+          : 'لم نجد الصرف أو الظهور أو الكليكات في الأعمدة. راجع أسماء الأعمدة قبل المتابعة؛ لن يستخدم النظام قيماً افتراضية.'
       });
     } else if (activeUploadType === 'backend_sheet') {
       let rawLeads = 0;
@@ -279,18 +278,13 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         if (!aov) aov = findVal('aov', 'average order', 'سعر البيع', 'قيمة الأوردر');
       });
 
-      if (!rawLeads && rows.length > 0) rawLeads = rows.length;
-      if (!confirmed) confirmed = Math.round(rawLeads * 0.52);
-      if (!cancelled) cancelled = rawLeads - confirmed;
-      if (!delivered) delivered = Math.round(confirmed * 0.82);
-
       const updatedBackendSheet: BackendSheetData = {
-        raw_orders: rawLeads || 233,
-        confirmed_orders: confirmed || 121,
-        cancelled_fake_orders: cancelled || 58,
-        delivered_orders: delivered || 98,
-        cogs_per_order: cogs || 350,
-        average_order_value: aov || 1200,
+        raw_orders: rawLeads,
+        confirmed_orders: confirmed,
+        cancelled_fake_orders: cancelled,
+        delivered_orders: delivered,
+        cogs_per_order: cogs,
+        average_order_value: aov,
         shipping_cost_per_order: 80,
         cod_fee_per_order: 25,
         confirmation_fee_per_order: 15
@@ -300,10 +294,14 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         ...prev,
         backend_sheet: updatedBackendSheet
       }));
+      const hasBackendMetrics = rawLeads > 0 && confirmed > 0 && cogs > 0 && aov > 0;
+      setUploadedSources(prev => ({ ...prev, backend: hasBackendMetrics }));
 
       setFileStatus({
-        type: 'success',
-        message: `تم تحليل شيت الكول سنتر والطلبات! الطلبات الأوليّة: ${rawLeads} | المؤكدة: ${confirmed} (معدل التأكيد ${((confirmed/Math.max(1, rawLeads))*100).toFixed(1)}%)`
+        type: hasBackendMetrics ? 'success' : 'error',
+        message: hasBackendMetrics
+          ? `تم تحليل شيت الكول سنتر والطلبات! الطلبات الأوليّة: ${rawLeads} | المؤكدة: ${confirmed} (معدل التأكيد ${((confirmed/Math.max(1, rawLeads))*100).toFixed(1)}%)`
+          : 'شيت الـCRM يحتاج: إجمالي الطلبات، المؤكد، تكلفة المنتج (COGS)، ومتوسط قيمة الطلب (AOV). لم يتم استبدالها بأرقام افتراضية.'
       });
     }
   };
@@ -321,6 +319,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         const parsedJson = JSON.parse(directTextInput.trim());
         if (parsedJson.ad_platforms && parsedJson.backend_sheet) {
           setStagedPayload(parsedJson);
+          setUploadedSources({ adPlatform: true, backend: true });
           setFileStatus({ type: 'success', message: 'تم استخراج بيانات الـ JSON النصية بنجاح وتحديث كافة المؤشرات!' });
           return;
         }
@@ -431,6 +430,11 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         };
       });
 
+      setUploadedSources({
+        adPlatform: Boolean(spend && impressions && clicks),
+        backend: Boolean(rawOrders && confirmedOrders && cogs && aov)
+      });
+
       setFileStatus({
         type: 'success',
         message: `تم تحليل النص واستخراج البيانات بنجاح! الصرف: ${spend ? spend.toLocaleString() + ' ج.م' : 'تم الاحتفاظ بالقيمة الحالية'} | الطلبات المؤكدة: ${confirmedOrders || 'محدثة'} | جاهز لتنفيذ التشخيص!`
@@ -445,10 +449,23 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   };
 
   // Trigger Audit with current staged payload
+  const missingRequirements = [
+    !uploadedSources.adPlatform && 'تقرير الإعلانات: الصرف والظهور والكليكات',
+    !uploadedSources.backend && 'شيت الـCRM: الطلبات والمؤكد وCOGS وAOV',
+    !periodStart && 'تاريخ بداية الفترة',
+    !periodEnd && 'تاريخ نهاية الفترة',
+    periodStart && periodEnd && periodStart > periodEnd && 'ترتيب تاريخ الفترة'
+  ].filter(Boolean) as string[];
+  const canRunAudit = missingRequirements.length === 0;
+
   const handleExecuteAudit = () => {
+    if (!canRunAudit) {
+      setFileStatus({ type: 'error', message: `لا يمكن تشغيل التشخيص قبل استكمال: ${missingRequirements.join('، ')}` });
+      return;
+    }
     const result = run5LayerAudit(stagedPayload);
     onAuditExecute(stagedPayload, result);
-    if (onNavigateToOverview) onNavigateToOverview();
+    setAuditCompleted(true);
   };
 
   // Download Sample Templates
@@ -482,15 +499,15 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   return (
     <div className="space-y-6 text-slate-900">
       {/* Tab Top Title Card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+      <div className="mp-panel rounded-[1.5rem] p-6 md:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 font-headline">
-              <UploadCloud className="w-5 h-5 text-emerald-600" />
-              <span>مركز رفع الشيتات والصور المباشر (Direct Upload & Audit)</span>
+              <UploadCloud className="w-5 h-5 text-[#6d45ff]" />
+              <span className="mp-page-title">مركز البيانات والتشخيص</span>
             </h2>
             <p className="text-xs text-slate-600 mt-1 font-sans">
-              ارفع شيتات الإعلانات، شيتات تأكيدات الكول سنتر، أو صور التصاميم الإعلانية لتشخيص الحملة ومحاكاة الأداء مباشرة دون أي ربط خارجي.
+              بيانات موحّدة، مراجعة دقيقة، ثم قرار تنفيذي واحد واضح.
             </p>
           </div>
 
@@ -509,6 +526,41 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
               <Download className="w-3.5 h-3.5 text-emerald-600" />
               <span>نموذج شيت (CSV)</span>
             </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3" aria-label="خطوات رفع البيانات">
+          <div className={`rounded-xl border p-3 ${uploadedSources.adPlatform ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+            <span className="text-[10px] font-mono font-bold text-slate-500">01 — مطلوب</span>
+            <p className="text-xs font-bold text-slate-900 mt-1">تقرير الإعلانات</p>
+            <p className="text-[11px] text-slate-600 mt-0.5">الصرف، الظهور، الكليكات</p>
+            <span className={`text-[10px] font-bold ${uploadedSources.adPlatform ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.adPlatform ? '✓ جاهز' : 'بانتظار الرفع'}</span>
+          </div>
+          <div className={`rounded-xl border p-3 ${uploadedSources.backend ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+            <span className="text-[10px] font-mono font-bold text-slate-500">02 — مطلوب</span>
+            <p className="text-xs font-bold text-slate-900 mt-1">شيت المبيعات / CRM</p>
+            <p className="text-[11px] text-slate-600 mt-0.5">الطلبات، COGS، وقيمة الطلب</p>
+            <span className={`text-[10px] font-bold ${uploadedSources.backend ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.backend ? '✓ جاهز' : 'بانتظار الرفع'}</span>
+          </div>
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
+            <span className="text-[10px] font-mono font-bold text-indigo-600">03 — اختياري</span>
+            <p className="text-xs font-bold text-slate-900 mt-1">صور الإعلان والشات</p>
+            <p className="text-[11px] text-slate-600 mt-0.5">مرجع بصري للمراجعة اليدوية، لا يدخل الحسابات تلقائياً.</p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-col md:flex-row md:items-end gap-3">
+            <div className="md:w-1/3">
+              <p className="text-xs font-bold text-slate-900">الفترة التي تغطيها الملفات</p>
+              <p className="text-[11px] text-slate-600 mt-1">استخدم نفس الفترة في تقرير الإعلانات وشيت الـCRM.</p>
+            </div>
+            <label className="flex-1 text-[11px] font-bold text-slate-700">من
+              <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs" />
+            </label>
+            <label className="flex-1 text-[11px] font-bold text-slate-700">إلى
+              <input type="date" value={periodEnd} min={periodStart || undefined} onChange={(e) => setPeriodEnd(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs" />
+            </label>
           </div>
         </div>
 
@@ -817,7 +869,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
                   <span className="text-xs font-mono text-emerald-800">{imageInfo?.name}</span>
                 </div>
                 <span className="text-[11px] text-emerald-700 block mt-0.5">
-                  حجم الصورة: {imageInfo?.size} — تم إدراج الصورة كـ Visual Creative للتحليل.
+                  حجم الصورة: {imageInfo?.size} — محفوظة كمرجع بصري؛ لا تدخل في الحسابات تلقائياً.
                 </span>
               </div>
             </div>
@@ -891,11 +943,11 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       </div>
 
       {/* Staged Data Preview & Verification Form */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+      <div className="mp-panel rounded-[1.5rem] p-6 md:p-7 space-y-6">
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div>
             <h3 className="text-sm font-bold text-slate-900 font-headline flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-emerald-600" />
+              <BarChart2 className="w-4 h-4 text-[#6d45ff]" />
               <span>مراجعة وتأكيد البيانات (Data Verification)</span>
             </h3>
             <p className="text-xs text-slate-600 mt-0.5">
@@ -905,13 +957,31 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
 
           <button
             onClick={handleExecuteAudit}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-headline font-bold text-xs transition-all cursor-pointer shadow-md active:scale-95 uppercase"
+            disabled={!canRunAudit}
+            title={!canRunAudit ? `استكمل: ${missingRequirements.join('، ')}` : undefined}
+            className="mp-primary flex items-center gap-2 px-6 py-3 rounded-xl font-headline font-bold text-xs transition-all cursor-pointer active:scale-95 uppercase disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none"
           >
             <Zap className="w-4 h-4 fill-current text-white" />
             <span>تنفيذ التشخيص الآن (Run Audit)</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
+
+        {!canRunAudit && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <strong>قبل تشغيل التشخيص:</strong> {missingRequirements.join('، ')}.
+          </div>
+        )}
+
+        {auditCompleted && (
+          <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold text-emerald-950">تم التشخيص باستخدام بياناتك للفترة {periodStart} إلى {periodEnd}.</p>
+              <p className="text-[11px] text-emerald-800 mt-1">راجع النتيجة الآن أو عدّل البيانات وأعد التشغيل.</p>
+            </div>
+            <button onClick={onNavigateToOverview} className="rounded-lg bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs font-bold text-white transition-colors">عرض النتيجة ←</button>
+          </div>
+        )}
 
         {/* Data Cards Preview Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1300,4 +1370,3 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
     </div>
   );
 };
-
