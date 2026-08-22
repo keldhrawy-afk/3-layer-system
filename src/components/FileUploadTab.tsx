@@ -78,8 +78,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   );
   
   // Image creative upload state
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageInfo, setImageInfo] = useState<{ name: string; size: string } | null>(null);
+  const [creativeImages, setCreativeImages] = useState<{ id: string; name: string; size: string; url: string }[]>([]);
 
   // Chat evaluation screenshots (5-10 images)
   const [chatScreenshots, setChatScreenshots] = useState<{ id: string; name: string; url: string; note: string }[]>([]);
@@ -95,6 +94,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const [saveNoteToMemory, setSaveNoteToMemory] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasAdSheetRef = useRef(false);
+  const hasBackendSheetRef = useRef(false);
 
   // Helper: Detect numeric columns from CSV/Excel row
   const extractNum = (val: any): number => {
@@ -105,6 +106,33 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       return isNaN(parsed) ? 0 : parsed;
     }
     return 0;
+  };
+
+  const mergeBackendSheets = (current: BackendSheetData, incoming: BackendSheetData): BackendSheetData => {
+    const currentOrders = Math.max(0, current.raw_orders || 0);
+    const incomingOrders = Math.max(0, incoming.raw_orders || 0);
+    const totalOrders = currentOrders + incomingOrders;
+    const weighted = (currentValue: number, incomingValue: number) => totalOrders ? ((currentValue || 0) * currentOrders + (incomingValue || 0) * incomingOrders) / totalOrders : 0;
+    return {
+      ...incoming,
+      raw_orders: totalOrders,
+      confirmed_orders: (current.confirmed_orders || 0) + (incoming.confirmed_orders || 0),
+      cancelled_fake_orders: (current.cancelled_fake_orders || 0) + (incoming.cancelled_fake_orders || 0),
+      delivered_orders: (current.delivered_orders || 0) + (incoming.delivered_orders || 0),
+      cogs_per_order: weighted(current.cogs_per_order, incoming.cogs_per_order),
+      average_order_value: weighted(current.average_order_value, incoming.average_order_value),
+      shipping_cost_per_order: weighted(current.shipping_cost_per_order, incoming.shipping_cost_per_order),
+      cod_fee_per_order: weighted(current.cod_fee_per_order, incoming.cod_fee_per_order),
+      confirmation_fee_per_order: weighted(current.confirmation_fee_per_order, incoming.confirmation_fee_per_order),
+      product_performance: [...(current.product_performance || []), ...(incoming.product_performance || [])],
+      operations: {
+        detailed_orders_count: (current.operations?.detailed_orders_count || 0) + (incoming.operations?.detailed_orders_count || 0),
+        sources: [...(current.operations?.sources || []), ...(incoming.operations?.sources || [])],
+        sales_reps: [...(current.operations?.sales_reps || []), ...(incoming.operations?.sales_reps || [])],
+        governorates: [...(current.operations?.governorates || []), ...(incoming.operations?.governorates || [])],
+        couriers: [...(current.operations?.couriers || []), ...(incoming.operations?.couriers || [])]
+      }
+    };
   };
 
   // Process uploaded file (CSV, XLSX, Image, or JSON)
@@ -132,11 +160,12 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             message: `تم إضافة صورة الشات (${file.name}) إلى قائمة نماذج التقييم (الإجمالي: ${chatScreenshots.length + 1} صور).`
           });
         } else {
-          setImagePreview(resultUrl);
-          setImageInfo({
+          setCreativeImages(previous => [...previous, {
+            id: `${file.name}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
             name: file.name,
-            size: (file.size / 1024).toFixed(1) + ' KB'
-          });
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            url: resultUrl
+          }]);
           setFileStatus({
             type: 'success',
             message: `تم رفع صورة الإعلان (${file.name}) بنجاح! جاهزة لتحليل المحتوى الإبداعي والـ Hook البصري.`
@@ -288,10 +317,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         budget_scaled_24h_pct: 10
       };
 
-      setStagedPayload(prev => ({
-        ...prev,
-        ad_platforms: [updatedAdPlatform]
-      }));
+      setStagedPayload(prev => ({ ...prev, ad_platforms: hasAdSheetRef.current ? [...prev.ad_platforms, updatedAdPlatform] : [updatedAdPlatform] }));
+      hasAdSheetRef.current = true;
 
       setUploadedSources(prev => ({ ...prev, adPlatform: totalSpend > 0 && totalImpressions > 0 && totalClicks > 0 }));
 
@@ -409,10 +436,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         }
       };
 
-      setStagedPayload(prev => ({
-        ...prev,
-        backend_sheet: updatedBackendSheet
-      }));
+      setStagedPayload(prev => ({ ...prev, backend_sheet: hasBackendSheetRef.current ? mergeBackendSheets(prev.backend_sheet, updatedBackendSheet) : updatedBackendSheet }));
+      hasBackendSheetRef.current = true;
       const hasBackendMetrics = rawLeads > 0 && confirmed > 0 && cogs > 0 && aov > 0;
       setUploadedSources(prev => ({ ...prev, backend: hasBackendMetrics }));
 
@@ -542,17 +567,13 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           average_order_value: aov || prev.backend_sheet.average_order_value
         };
 
-        return {
-          ...prev,
-          ad_platforms: [updatedAdPlatform],
-          backend_sheet: updatedBackendSheet
-        };
+        return { ...prev, ad_platforms: [updatedAdPlatform, ...prev.ad_platforms.slice(1)], backend_sheet: updatedBackendSheet };
       });
 
-      setUploadedSources({
-        adPlatform: Boolean(spend && impressions && clicks),
-        backend: Boolean(rawOrders && confirmedOrders && cogs && aov)
-      });
+      setUploadedSources(previous => ({
+        adPlatform: previous.adPlatform || Boolean(spend && impressions && clicks),
+        backend: previous.backend || Boolean(rawOrders && confirmedOrders && cogs && aov)
+      }));
 
       setFileStatus({
         type: 'success',
@@ -601,6 +622,8 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const emptyBackendSheet: BackendSheetData = { raw_orders: 0, confirmed_orders: 0, cancelled_fake_orders: 0, delivered_orders: 0, cogs_per_order: 0, average_order_value: 0, shipping_cost_per_order: 0, cod_fee_per_order: 0, confirmation_fee_per_order: 0 };
 
   const removeDataSource = (source: 'adPlatform' | 'backend') => {
+    if (source === 'adPlatform') hasAdSheetRef.current = false;
+    else hasBackendSheetRef.current = false;
     setUploadedSources(previous => ({ ...previous, [source]: false }));
     setStagedPayload(previous => source === 'adPlatform' ? { ...previous, ad_platforms: [] } : { ...previous, backend_sheet: emptyBackendSheet, chat_data: undefined });
     setParsedRowsPreview(null);
@@ -610,9 +633,11 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   };
 
   const clearAllUploads = () => {
+    hasAdSheetRef.current = false;
+    hasBackendSheetRef.current = false;
     setStagedPayload({ store_name: currentPayload.store_name, currency: currentPayload.currency, timeframe: currentPayload.timeframe, ad_platforms: [], backend_sheet: emptyBackendSheet, data_context_note: '', system_memory_notes: systemMemoryNotes });
     setUploadedSources({ adPlatform: false, backend: false });
-    setFileName(null); setParsedRowsPreview(null); setImagePreview(null); setImageInfo(null); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
+    setFileName(null); setParsedRowsPreview(null); setCreativeImages([]); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
     setFileStatus({ type: 'info', message: 'تم مسح كل المدخلات من جلسة التحليل الحالية. ذاكرة النظام المحفوظة لم تتأثر.' });
   };
 
@@ -686,13 +711,13 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             <span className="text-[10px] font-mono font-bold text-slate-500">01 — مطلوب</span>
             <p className="text-xs font-bold text-slate-900 mt-1">تقرير الإعلانات</p>
             <p className="text-[11px] text-slate-600 mt-0.5">الصرف، الظهور، الكليكات</p>
-            <span className={`text-[10px] font-bold ${uploadedSources.adPlatform ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.adPlatform ? '✓ جاهز' : 'بانتظار الرفع'}</span>
+            <div className="mt-1 flex items-center justify-between gap-2"><span className={`text-[10px] font-bold ${uploadedSources.adPlatform ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.adPlatform ? `✓ جاهز (${stagedPayload.ad_platforms.length} تقرير)` : 'بانتظار الرفع'}</span>{uploadedSources.adPlatform && <button type="button" onClick={() => removeDataSource('adPlatform')} className="text-[10px] font-bold text-rose-700 hover:text-rose-800">حذف</button>}</div>
           </div>
           <div className={`rounded-xl border p-3 ${uploadedSources.backend ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
             <span className="text-[10px] font-mono font-bold text-slate-500">02 — مطلوب</span>
             <p className="text-xs font-bold text-slate-900 mt-1">شيت المبيعات / CRM</p>
             <p className="text-[11px] text-slate-600 mt-0.5">الطلبات، COGS، وقيمة الطلب</p>
-            <span className={`text-[10px] font-bold ${uploadedSources.backend ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.backend ? '✓ جاهز' : 'بانتظار الرفع'}</span>
+            <div className="mt-1 flex items-center justify-between gap-2"><span className={`text-[10px] font-bold ${uploadedSources.backend ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.backend ? '✓ جاهز — شيتات مجمّعة' : 'بانتظار الرفع'}</span>{uploadedSources.backend && <button type="button" onClick={() => removeDataSource('backend')} className="text-[10px] font-bold text-rose-700 hover:text-rose-800">حذف الشيتات</button>}</div>
           </div>
           <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
             <span className="text-[10px] font-mono font-bold text-indigo-600">03 — اختياري</span>
@@ -1051,36 +1076,11 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           )}
         </div>
 
-        {/* Uploaded Image Preview Box */}
-        {imagePreview && (
-          <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <img
-                src={imagePreview}
-                alt="Creative Preview"
-                className="w-16 h-16 object-cover rounded-lg border border-emerald-300 shadow-sm"
-              />
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-emerald-900 font-headline">صورة الإعلان المرفوعة:</span>
-                  <span className="text-xs font-mono text-emerald-800">{imageInfo?.name}</span>
-                </div>
-                <span className="text-[11px] text-emerald-700 block mt-0.5">
-                  حجم الصورة: {imageInfo?.size} — محفوظة كمرجع بصري؛ لا تدخل في الحسابات تلقائياً.
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setImagePreview(null);
-                setImageInfo(null);
-              }}
-              className="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
-              title="حذف الصورة"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+        {/* Uploaded creative images — every image remains attached until removed individually. */}
+        {creativeImages.length > 0 && (
+          <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4">
+            <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2"><div className="flex items-center gap-2"><ImageIcon className="h-4 w-4 text-emerald-700" /><h4 className="text-xs font-bold text-emerald-950 font-headline">صور الإعلانات المرفوعة ({creativeImages.length})</h4></div><button type="button" onClick={() => setCreativeImages([])} className="flex items-center gap-1 text-[10px] font-bold text-rose-700 hover:text-rose-800"><Trash2 className="h-3.5 w-3.5" />حذف كل الصور</button></div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">{creativeImages.map((image) => <div key={image.id} className="relative space-y-1 rounded-lg border border-emerald-200 bg-white p-2 shadow-2xs"><img src={image.url} alt={image.name} className="h-24 w-full rounded border border-emerald-100 object-cover" /><p className="truncate text-[10px] font-bold text-slate-900" title={image.name}>{image.name}</p><p className="text-[9px] text-emerald-700">{image.size}</p><button type="button" onClick={() => setCreativeImages(previous => previous.filter(item => item.id !== image.id))} className="absolute left-1 top-1 rounded-full bg-rose-600 p-1 text-white shadow" title="حذف الصورة"><Trash2 className="h-3 w-3" /></button></div>)}</div>
           </div>
         )}
 
