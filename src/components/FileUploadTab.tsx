@@ -47,35 +47,13 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   onAuditExecute,
   onNavigateToOverview
 }) => {
-  const [activeUploadType, setActiveUploadType] = useState<'ad_platform' | 'backend_sheet' | 'image_creative' | 'chat_screenshots' | 'full_json' | 'direct_text'>('ad_platform');
+  const [activeUploadType, setActiveUploadType] = useState<'ad_platform' | 'image_creative' | 'chat_screenshots' | 'direct_text'>('direct_text');
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileStatus, setFileStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
   
   // Direct text input state
-  const [directTextInput, setDirectTextInput] = useState<string>(
-`تاريخ اليوم: 19
-مؤشرات الإعلان:
-- الصرف: 48,500 ج.م
-- الظهور: 450,000
-- الكليكات: 9,500 (CTR: 2.4%)
-- تكلفة الكليك CPC: 1.80 ج.م
-- CPA السابق: 88 ج.م
-- CPA الحالي: 155 ج.م
-
-شيت الكول سنتر والطلبات:
-- إجمالي الطلبات (Raw Leads): 233
-- الطلبات المؤكدة (Confirmed): 121
-- المرتجعات والملغية: 58
-- المسلمة: 98
-- تكلفة القطعة COGS: 350 ج.م
-- سعر البيع AOV: 1,200 ج.م
-
-حالة العوامل الخارجية:
-- المنافسين: مستقر في Meta Ad Library
-- سرعة رد السيلز FRT: 3 دقائق
-- حالة المخزون: الروتين مكتمل`
-  );
+  const [directTextInput, setDirectTextInput] = useState<string>('');
   
   // Image creative upload state
   const [creativeImages, setCreativeImages] = useState<{ id: string; name: string; size: string; url: string }[]>([]);
@@ -84,7 +62,11 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const [chatScreenshots, setChatScreenshots] = useState<{ id: string; name: string; url: string; note: string }[]>([]);
 
   // Staging payload state before applying audit
-  const [stagedPayload, setStagedPayload] = useState<AuditPayload>(currentPayload);
+  const [stagedPayload, setStagedPayload] = useState<AuditPayload>({
+    ...currentPayload,
+    ad_platforms: [],
+    backend_sheet: { raw_orders: 0, confirmed_orders: 0, cancelled_fake_orders: 0, delivered_orders: 0, cogs_per_order: 0, average_order_value: 0, shipping_cost_per_order: 0, cod_fee_per_order: 0, confirmation_fee_per_order: 0 }
+  });
   const [parsedRowsPreview, setParsedRowsPreview] = useState<Record<string, any>[] | null>(null);
   const [uploadedSources, setUploadedSources] = useState({ adPlatform: false, backend: false });
   const [periodStart, setPeriodStart] = useState('');
@@ -242,7 +224,9 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const processParsedData = (rows: Record<string, any>[]) => {
     setParsedRowsPreview(rows.slice(0, 5));
 
-    if (activeUploadType === 'ad_platform' || activeUploadType === 'image_creative') {
+    const parseAsBackend = rows.some(row => Object.keys(row).some(key => /order\s*(id|no|number)?|invoice|confirmed|cancelled|cogs|aov|sales rep|governorate|courier|رقم.*(اوردر|طلب|فاتورة)|المؤكدة|تكلفة.*(قطعة|منتج)|متوسط.*(سعر|قيمة)|المحافظة|شركة الشحن/i.test(key)));
+
+    if (!parseAsBackend) {
       let totalImpressions = 0;
       let totalSpend = 0;
       let totalClicks = 0;
@@ -328,7 +312,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           ? `تم تحليل ${rows.length} صف من تقرير المنصات بنجاح! الصرف: ${totalSpend.toLocaleString()} ج.م | الظهور: ${totalImpressions.toLocaleString()}`
           : 'لم نجد الصرف أو الظهور أو الكليكات في الأعمدة. راجع أسماء الأعمدة قبل المتابعة؛ لن يستخدم النظام قيماً افتراضية.'
       });
-    } else if (activeUploadType === 'backend_sheet') {
+    } else {
       let rawLeads = 0;
       let confirmed = 0;
       let cancelled = 0;
@@ -589,23 +573,10 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   };
 
   // Trigger Audit with current staged payload
-  const hasAdData = uploadedSources.adPlatform && stagedPayload.ad_platforms.some(platform => (platform.spend || 0) > 0 && (platform.impressions || 0) > 0 && (platform.clicks || 0) > 0);
-  const hasBackendData = uploadedSources.backend && (stagedPayload.backend_sheet.raw_orders || 0) > 0
-    && (stagedPayload.backend_sheet.confirmed_orders || 0) > 0
-    && (stagedPayload.backend_sheet.cogs_per_order || 0) > 0
-    && (stagedPayload.backend_sheet.average_order_value || 0) > 0;
-  const missingRequirements = [
-    !hasAdData && 'تقرير الإعلانات: الصرف والظهور والكليكات',
-    !hasBackendData && 'شيت الـCRM: الطلبات والمؤكد وCOGS وAOV',
-    periodStart && periodEnd && periodStart > periodEnd && 'ترتيب تاريخ الفترة'
-  ].filter(Boolean) as string[];
-  const canRunAudit = missingRequirements.length === 0;
+  // This is an open analysis workspace: any mix of text, files, and visuals may be run.
+  const canRunAudit = true;
 
   const handleExecuteAudit = () => {
-    if (!canRunAudit) {
-      setFileStatus({ type: 'error', message: `لا يمكن تشغيل التشخيص قبل استكمال: ${missingRequirements.join('، ')}` });
-      return;
-    }
     const currentNote = stagedPayload.data_context_note?.trim();
     const nextMemory = saveNoteToMemory && currentNote
       ? [currentNote, ...systemMemoryNotes.filter(note => note !== currentNote)].slice(0, 12)
@@ -709,63 +680,19 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3" aria-label="خطوات رفع البيانات">
-          <div className={`rounded-xl border p-3 ${uploadedSources.adPlatform ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
-            <span className="text-[10px] font-mono font-bold text-slate-500">01 — مطلوب</span>
-            <p className="text-xs font-bold text-slate-900 mt-1">تقرير الإعلانات</p>
-            <p className="text-[11px] text-slate-600 mt-0.5">الصرف، الظهور، الكليكات</p>
-            <div className="mt-1 flex items-center justify-between gap-2"><span className={`text-[10px] font-bold ${uploadedSources.adPlatform ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.adPlatform ? `✓ جاهز (${stagedPayload.ad_platforms.length} تقرير)` : 'بانتظار الرفع'}</span>{uploadedSources.adPlatform && <button type="button" onClick={() => removeDataSource('adPlatform')} className="text-[10px] font-bold text-rose-700 hover:text-rose-800">حذف</button>}</div>
-          </div>
-          <div className={`rounded-xl border p-3 ${uploadedSources.backend ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
-            <span className="text-[10px] font-mono font-bold text-slate-500">02 — مطلوب</span>
-            <p className="text-xs font-bold text-slate-900 mt-1">شيت المبيعات / CRM</p>
-            <p className="text-[11px] text-slate-600 mt-0.5">الطلبات، COGS، وقيمة الطلب</p>
-            <div className="mt-1 flex items-center justify-between gap-2"><span className={`text-[10px] font-bold ${uploadedSources.backend ? 'text-emerald-700' : 'text-amber-700'}`}>{uploadedSources.backend ? '✓ جاهز — شيتات مجمّعة' : 'بانتظار الرفع'}</span>{uploadedSources.backend && <button type="button" onClick={() => removeDataSource('backend')} className="text-[10px] font-bold text-rose-700 hover:text-rose-800">حذف الشيتات</button>}</div>
-          </div>
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
-            <span className="text-[10px] font-mono font-bold text-indigo-600">03 — اختياري</span>
-            <p className="text-xs font-bold text-slate-900 mt-1">صور الإعلان والشات</p>
-            <p className="text-[11px] text-slate-600 mt-0.5">مرجع بصري للمراجعة اليدوية، لا يدخل الحسابات تلقائياً.</p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex flex-col md:flex-row md:items-end gap-3">
-            <div className="md:w-1/3">
-              <p className="text-xs font-bold text-slate-900">الفترة التي تغطيها الملفات</p>
-              <p className="text-[11px] text-slate-600 mt-1">استخدم نفس الفترة في تقرير الإعلانات وشيت الـCRM.</p>
-            </div>
-            <label className="flex-1 text-[11px] font-bold text-slate-700">من
-              <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs" />
-            </label>
-            <label className="flex-1 text-[11px] font-bold text-slate-700">إلى
-              <input type="date" value={periodEnd} min={periodStart || undefined} onChange={(e) => setPeriodEnd(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs" />
-            </label>
-          </div>
-        </div>
-
-        {/* Notice for Ground Truth Sheet Sales vs Delayed Meta Purchase */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 flex items-start gap-2 font-sans">
-          <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold block text-amber-950 font-headline">قاعدة اعتماد مصدر الحقيقة المباشر (Ground Truth Rule):</span>
-            <span>تم استبعاد الاعتماد على Purchase بكسل ميتا كمقياس حقيقي للمبيعات لتأخره المعتاد في التحديث والتأخير. نعتمد حصرياً على إجمالي أوردرات المبيعات التأكيدية المسجلة بالشيت المباشر لحساب الربحية الصافية والـ True CPA بدقة.</span>
-          </div>
-        </div>
-
         <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-4" dir="rtl">
           <div className="flex items-start gap-2">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-indigo-700" />
             <div>
               <p className="text-xs font-bold text-indigo-950">ارفع أكثر من نوع في نفس التحليل</p>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-600">تقدر ترفع ملف البيانات أولاً، ثم تضيف صورة إعلان أو صور شات، وتكتب أو تلصق نصًا كذلك. التنقل بين الاختيارات لا يمسح أي شيء تم رفعه أو تطبيقه.</p>
-              <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-bold"><span className="rounded-full border border-emerald-200 bg-white px-2 py-1 text-emerald-800">ملف CSV / Excel / JSON</span><span className="rounded-full border border-violet-200 bg-white px-2 py-1 text-violet-800">صورة إعلان أو شات</span><span className="rounded-full border border-blue-200 bg-white px-2 py-1 text-blue-800">نص / توضيح إضافي</span></div>
+              <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-bold"><span className="rounded-full border border-emerald-200 bg-white px-2 py-1 text-emerald-800">أي ملف CSV / Excel</span><span className="rounded-full border border-violet-200 bg-white px-2 py-1 text-violet-800">صورة إعلان أو شات</span><span className="rounded-full border border-blue-200 bg-white px-2 py-1 text-blue-800">نص / توضيح إضافي</span></div>
             </div>
           </div>
         </div>
 
         {/* Mode Selector Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
           <button
             onClick={() => setActiveUploadType('ad_platform')}
             className={`p-2.5 rounded-lg border text-right transition-all cursor-pointer flex items-center justify-between ${
@@ -775,25 +702,10 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             }`}
           >
             <div>
-              <span className="text-xs font-headline block font-bold">1. تقرير الإعلانات</span>
-              <span className="text-[10px] text-slate-500 font-mono">Meta Ads CSV/XLSX</span>
+              <span className="text-xs font-headline block font-bold">1. رفع ملفات البيانات</span>
+              <span className="text-[10px] text-slate-500 font-mono">CSV / Excel بأي شكل</span>
             </div>
             <FileSpreadsheet className={`w-4 h-4 ${activeUploadType === 'ad_platform' ? 'text-emerald-600' : 'text-slate-400'}`} />
-          </button>
-
-          <button
-            onClick={() => setActiveUploadType('backend_sheet')}
-            className={`p-2.5 rounded-lg border text-right transition-all cursor-pointer flex items-center justify-between ${
-              activeUploadType === 'backend_sheet'
-                ? 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold shadow-sm'
-                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <div>
-              <span className="text-xs font-headline block font-bold">2. شيت الكول سنتر</span>
-              <span className="text-[10px] text-slate-500 font-mono">الطلبات، COGS، والمنتج</span>
-            </div>
-            <FileText className={`w-4 h-4 ${activeUploadType === 'backend_sheet' ? 'text-emerald-600' : 'text-slate-400'}`} />
           </button>
 
           <button
@@ -805,7 +717,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             }`}
           >
             <div>
-              <span className="text-xs font-headline block font-bold">3. رفع صورة إعلان</span>
+              <span className="text-xs font-headline block font-bold">2. رفع صورة إعلان</span>
               <span className="text-[10px] text-slate-500 font-mono">PNG, JPG, WEBP</span>
             </div>
             <ImageIcon className={`w-4 h-4 ${activeUploadType === 'image_creative' ? 'text-emerald-600' : 'text-slate-400'}`} />
@@ -820,25 +732,10 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             }`}
           >
             <div>
-              <span className="text-xs font-headline block font-bold">4. نماذج الشات</span>
+              <span className="text-xs font-headline block font-bold">3. نماذج الشات</span>
               <span className="text-[10px] text-purple-700 font-mono font-bold">صور محادثات CRM</span>
             </div>
             <MessageSquare className={`w-4 h-4 ${activeUploadType === 'chat_screenshots' ? 'text-purple-600' : 'text-slate-400'}`} />
-          </button>
-
-          <button
-            onClick={() => setActiveUploadType('full_json')}
-            className={`p-2.5 rounded-lg border text-right transition-all cursor-pointer flex items-center justify-between ${
-              activeUploadType === 'full_json'
-                ? 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold shadow-sm'
-                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <div>
-              <span className="text-xs font-headline block font-bold">5. ملف JSON</span>
-              <span className="text-[10px] text-slate-500 font-mono">AuditPayload JSON</span>
-            </div>
-            <FileCode className={`w-4 h-4 ${activeUploadType === 'full_json' ? 'text-emerald-600' : 'text-slate-400'}`} />
           </button>
 
           <button
@@ -850,7 +747,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             }`}
           >
             <div>
-              <span className="text-xs font-headline block font-bold text-blue-950">6. كتابة نص مباشر</span>
+              <span className="text-xs font-headline block font-bold text-blue-950">4. كتابة نص مباشر</span>
               <span className="text-[10px] text-blue-700 font-mono font-bold">تقرير / أرقام / شات</span>
             </div>
             <Type className={`w-4 h-4 ${activeUploadType === 'direct_text' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -978,7 +875,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
               <div className="flex items-center gap-2 text-[11px] text-slate-600 font-sans">
                 <Sparkles className="w-4 h-4 text-blue-600" />
-                <span>يدعم الاستخراج الذكي للأرقام (Spend, Orders, Clicks, COGS, AOV) وصيغ JSON والنصوص الحرة.</span>
+                <span>اكتب أي سياق أو أرقام أو وصف؛ سيُضاف إلى نفس جلسة التحليل مع الملفات والصور.</span>
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1021,7 +918,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
                 }
                 e.target.value = '';
               }}
-              accept=".csv, .xlsx, .xls, .json, .png, .jpg, .jpeg, .webp, .gif"
+              accept=".csv, .xlsx, .xls, .png, .jpg, .jpeg, .webp, .gif"
               multiple
               className="hidden"
             />
@@ -1035,7 +932,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
                 اسحب واسقط الملف أو صورة الإعلان هنا، أو اضغط للتصفح
               </span>
               <span className="text-xs text-slate-600 font-mono mt-1 block">
-                يدعم اختيار أكثر من ملف في المرة نفسها: Excel (.xlsx, .xls)، CSV (.csv)، JSON (.json)، والصور (.png, .jpg, .webp)
+                يدعم اختيار أكثر من ملف في المرة نفسها: Excel (.xlsx, .xls)، CSV (.csv)، والصور (.png, .jpg, .webp)
               </span>
             </div>
 
@@ -1157,9 +1054,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
 
           <button
             onClick={handleExecuteAudit}
-            disabled={!canRunAudit}
-            title={!canRunAudit ? `استكمل: ${missingRequirements.join('، ')}` : undefined}
-            className="mp-primary flex items-center gap-2 px-6 py-3 rounded-xl font-headline font-bold text-xs transition-all cursor-pointer active:scale-95 uppercase disabled:cursor-not-allowed disabled:!bg-slate-200 disabled:!text-slate-500 disabled:opacity-70 disabled:shadow-none"
+            className="mp-primary flex items-center gap-2 px-6 py-3 rounded-xl font-headline font-bold text-xs transition-all cursor-pointer active:scale-95 uppercase"
           >
             <Zap className="w-4 h-4 fill-current text-white" />
             <span>ابدأ التحليل في كل الـLayers</span>
@@ -1167,13 +1062,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
           </button>
         </div>
 
-        {!canRunAudit && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            <strong>قبل تشغيل التشخيص:</strong> {missingRequirements.join('، ')}.
-          </div>
-        )}
-
-        {canRunAudit && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900">جاهز: اضغط الزر لتمرير الداتا الحالية إلى كل الـLayers وعرض النتيجة. الفترة اختيارية، لكن استخدامها يحسّن دقة المقارنة.</div>}
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900">ارفع أو اكتب أي مدخلات تريد تحليلها، ثم اضغط Run. لا توجد ملفات أو حقول إلزامية.</div>
 
         {auditCompleted && (
           <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
