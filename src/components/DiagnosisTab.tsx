@@ -39,6 +39,7 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
   const confirmed = backend_sheet.confirmed_orders || 0;
   const cancelled = backend_sheet.cancelled_fake_orders || 0;
   const delivered = backend_sheet.delivered_orders || 0;
+  const salesPurchaseCvr = auditResult.raw_calculated_metrics?.sales_purchase_cvr ?? '0%';
 
   // Defaults if l2 is pending
   const chatKpis: Layer2ChatKpi[] = l2?.chat_kpis || [
@@ -320,6 +321,7 @@ export const DiagnosisTab: React.FC<DiagnosisTabProps> = ({ payload, auditResult
         </div>
 
         {/* Executive Summary Diagnosis */}
+        <div className="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3" dir="rtl"><p className="text-[10px] font-bold text-indigo-700">Sales Purchase CVR — Layer 2</p><p className="mt-1 text-xl font-black text-indigo-950">{salesPurchaseCvr}</p><p className="text-[10px] text-slate-600">Confirmed Sales Purchases ÷ Chats (مختلف عن Purchase المنصة في Layer 1)</p></div>
         <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-xl space-y-2">
           <h4 className="text-xs font-bold text-purple-950 font-headline flex items-center gap-2">
             <Zap className="w-4 h-4 text-purple-700" />

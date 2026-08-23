@@ -505,6 +505,8 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
 
   // 3. Chat CVR = (Closed_Orders / Actual_CRM_Chats) * 100
   const calcChatCvr = Number(((closedOrdersCount / Math.max(1, actualReceivedChats)) * 100).toFixed(1));
+  const platformPurchaseCvr = Number(((totalReportedOrders / Math.max(1, totalClicks)) * 100).toFixed(2));
+  const salesPurchaseCvr = Number(((confirmedOrders / Math.max(1, actualReceivedChats)) * 100).toFixed(2));
 
   // 4. Follow-up Close Rate = (Followup_Closed_Orders / Total_Closed_Orders) * 100
   const calcFollowupCloseRate = Number(((followupClosedOrders / Math.max(1, closedOrdersCount)) * 100).toFixed(1));
@@ -921,6 +923,10 @@ export function run5LayerAudit(payload: AuditPayload): AuditResult {
     },
     action_queue: actionQueue,
     raw_calculated_metrics: {
+      platform_purchases: totalReportedOrders,
+      platform_purchase_cvr: `${platformPurchaseCvr}%`,
+      sales_confirmed_purchases: confirmedOrders,
+      sales_purchase_cvr: `${salesPurchaseCvr}%`,
       hook_rate: `${hookRate.toFixed(1)}%`,
       hold_rate: `${holdRate.toFixed(1)}%`,
       confirmation_rate: `${confirmationRate.toFixed(1)}%`,

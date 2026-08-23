@@ -218,6 +218,10 @@ export default function App() {
                   </div>
                 </section>
               )}
+              <section className="rounded-2xl border border-indigo-200 bg-white p-5 shadow-2xs" dir="rtl">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><p className="text-[10px] font-bold text-indigo-700">دليل الإدخال</p><h2 className="text-sm font-black text-slate-900">الداتا التي ترفعها للسيستم وطريقة استخراجها</h2><p className="mt-1 text-[11px] text-slate-600">ارفع أي مجموعة متاحة ثم Run؛ النظام يربط النتائج بين Layer 1 وLayer 2 وLayer 3.</p></div><button onClick={() => setActiveTab('upload_files')} className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700">فتح مركز الإدخال</button></div>
+                <div className="mt-4 grid gap-3 md:grid-cols-3"><div className="rounded-xl bg-emerald-50 p-3 text-xs"><b>Layer 1 — المنصة</b><p className="mt-1 text-slate-600">Export من Ads Manager: Campaign, Platform/Placement, Spend, Impressions, Clicks, Purchases.</p><p className="mt-1 font-bold text-emerald-800">CVR المنصة = Purchases ÷ Clicks</p></div><div className="rounded-xl bg-violet-50 p-3 text-xs"><b>Layer 2 — المبيعات</b><p className="mt-1 text-slate-600">شيت الطلبات أو CRM: Chats, Confirmed, Delivered, AOV, COGS, FRT.</p><p className="mt-1 font-bold text-violet-800">CVR المبيعات = Confirmed Purchases ÷ Chats</p></div><div className="rounded-xl bg-amber-50 p-3 text-xs"><b>Layer 3 — السياق</b><p className="mt-1 text-slate-600">أضف نصًا للعرض، المخزون، ملاحظات التسليم أو أي ظروف خارجية.</p><p className="mt-1 font-bold text-amber-800">تظهر في القرار والتنبيهات.</p></div></div>
+              </section>
               {/* Top KPI Summary Row */}
               <TopKpiCards financials={auditResult?.financial_economics} />
 
