@@ -75,6 +75,9 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
   const [auditCompleted, setAuditCompleted] = useState(false);
   const [systemMemoryNotes, setSystemMemoryNotes] = useState<string[]>(loadSystemMemory);
   const [saveNoteToMemory, setSaveNoteToMemory] = useState(false);
+  const [campaignBreakdown, setCampaignBreakdown] = useState<Array<{ name: string; channel: string; spend: number; impressions: number; clicks: number; purchases: number }>>([]);
+  const [preRunCommand, setPreRunCommand] = useState('');
+  const [commandFeedback, setCommandFeedback] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasAdSheetRef = useRef(false);
@@ -116,6 +119,26 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         couriers: [...(current.operations?.couriers || []), ...(incoming.operations?.couriers || [])]
       }
     };
+  };
+
+  const runPreRunCommand = () => {
+    const command = preRunCommand.trim().toLowerCase();
+    if (!command) return;
+    if (/instagram|انستجرام|انستغرام/.test(command)) {
+      const kept = campaignBreakdown.filter(item => /instagram|انستجرام|انستغرام/i.test(item.channel));
+      if (!kept.length) { setCommandFeedback('لم أجد صفوفًا مُعرّفة كـ Instagram في الشيت الحالي. راجع عمود Platform أو Placement.'); return; }
+      const spend = kept.reduce((total, item) => total + item.spend, 0); const impressions = kept.reduce((total, item) => total + item.impressions, 0); const clicks = kept.reduce((total, item) => total + item.clicks, 0); const purchases = kept.reduce((total, item) => total + item.purchases, 0);
+      setCampaignBreakdown(kept);
+      setStagedPayload(previous => ({ ...previous, ad_platforms: [{ platform: 'Meta', channel: 'Instagram', spend, impressions, clicks, three_sec_views: 0, seventy_five_percent_views: 0, reported_orders: purchases, reported_revenue: 0 }] }));
+      setCommandFeedback(`تم الاحتفاظ ببيانات Instagram فقط: ${kept.length} حملة.`);
+    } else if (/purchase|purchases|شراء|مشتريات/.test(command) && /شيل|استبعد|احذف|exclude|remove/.test(command)) {
+      setStagedPayload(previous => ({ ...previous, ad_platforms: previous.ad_platforms.map(platform => ({ ...platform, reported_orders: 0, reported_revenue: 0 })) }));
+      setCampaignBreakdown(previous => previous.map(item => ({ ...item, purchases: 0 })));
+      setCommandFeedback('تم استبعاد Metric Purchases من التحليل الحالي قبل الـRun.');
+    } else {
+      setCommandFeedback('فهمت الأمر كسياق للتحليل. اكتب مثلًا: «احتفظ بإنستجرام فقط» أو «استبعد Purchases».');
+    }
+    setPreRunCommand('');
   };
 
   // Process uploaded file (CSV, XLSX, Image, or JSON)
@@ -248,6 +271,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       let totalSaves = 0;
       let totalShares = 0;
       let totalPhotoClicks = 0;
+      const campaignRows = new Map<string, { name: string; channel: string; spend: number; impressions: number; clicks: number; purchases: number }>();
 
       rows.forEach((row) => {
         const findVal = (...keys: string[]) => {
@@ -258,6 +282,10 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             }
           }
           return 0;
+        };
+        const findText = (...keys: string[]) => {
+          const field = Object.keys(row).find(key => keys.some(item => key.toLowerCase().trim().includes(item.toLowerCase())));
+          return field ? String(row[field] || '').trim() : '';
         };
 
         totalImpressions += findVal('impression', 'ظهور', 'الظهور', 'views');
@@ -278,6 +306,14 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
         totalSaves += findVal('post saves', 'حفظ المنشور');
         totalShares += findVal('post shares', 'مشاركات المنشور');
         totalPhotoClicks += findVal('photo clicks', 'نقرات الصورة');
+        const campaignName = findText('campaign name', 'campaign', 'اسم الحملة') || 'حملة بدون اسم';
+        const channel = findText('platform', 'placement', 'publisher platform', 'المنصة', 'موضع الظهور') || 'غير محدد';
+        const rowCampaign = campaignRows.get(`${campaignName}-${channel}`) || { name: campaignName, channel, spend: 0, impressions: 0, clicks: 0, purchases: 0 };
+        rowCampaign.spend += findVal('spend', 'amount spent', 'الصرف', 'المبلغ المنفق', 'cost');
+        rowCampaign.impressions += findVal('impression', 'ظهور', 'الظهور', 'views');
+        rowCampaign.clicks += findVal('click', 'كليك', 'الضغطات', 'النقرات');
+        rowCampaign.purchases += findVal('purchase', 'reported orders', 'مشتريات', 'شراء');
+        campaignRows.set(`${campaignName}-${channel}`, rowCampaign);
       });
 
       const updatedAdPlatform: AdPlatformData = {
@@ -305,6 +341,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
       };
 
       setStagedPayload(prev => ({ ...prev, ad_platforms: hasAdSheetRef.current ? [...prev.ad_platforms, updatedAdPlatform] : [updatedAdPlatform] }));
+      setCampaignBreakdown(previous => [...previous, ...Array.from(campaignRows.values())]);
       hasAdSheetRef.current = true;
 
       setUploadedSources(prev => ({ ...prev, adPlatform: totalSpend > 0 && totalImpressions > 0 && totalClicks > 0 }));
@@ -615,6 +652,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
     setUploadedSources(previous => ({ ...previous, [source]: false }));
     setStagedPayload(previous => source === 'adPlatform' ? { ...previous, ad_platforms: [] } : { ...previous, backend_sheet: emptyBackendSheet, chat_data: undefined });
     setParsedRowsPreview(null);
+    setCampaignBreakdown([]);
     setFileName(null);
     setUploadedDataFiles([]);
     setAuditCompleted(false);
@@ -626,7 +664,7 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
     hasBackendSheetRef.current = false;
     setStagedPayload({ store_name: currentPayload.store_name, currency: currentPayload.currency, timeframe: currentPayload.timeframe, ad_platforms: [], backend_sheet: emptyBackendSheet, data_context_note: '', system_memory_notes: systemMemoryNotes });
     setUploadedSources({ adPlatform: false, backend: false });
-    setFileName(null); setUploadedDataFiles([]); setParsedRowsPreview(null); setCreativeImages([]); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
+    setFileName(null); setUploadedDataFiles([]); setParsedRowsPreview(null); setCampaignBreakdown([]); setCreativeImages([]); setChatScreenshots([]); setDirectTextInput(''); setPeriodStart(''); setPeriodEnd(''); setAuditCompleted(false); setSaveNoteToMemory(false);
     setFileStatus({ type: 'info', message: 'تم مسح كل المدخلات من جلسة التحليل الحالية. ذاكرة النظام المحفوظة لم تتأثر.' });
   };
 
@@ -959,6 +997,14 @@ export const FileUploadTab: React.FC<FileUploadTabProps> = ({
             )}
           </div>
         )}
+
+        <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4" dir="rtl">
+          <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-indigo-700" /><div><h3 className="text-xs font-bold text-indigo-950">مساعد فهم الشيت قبل الـRun</h3><p className="text-[10px] text-slate-600">يطبّق أوامر سريعة على البيانات التي تم اكتشافها في الملف الحالي.</p></div></div>
+          <div className="mt-3 flex gap-2"><input value={preRunCommand} onChange={(event) => setPreRunCommand(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runPreRunCommand()} placeholder="مثال: احتفظ بإنستجرام فقط / استبعد Purchases" className="min-w-0 flex-1 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs outline-none focus:border-indigo-500" /><button type="button" onClick={runPreRunCommand} className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">تطبيق</button></div>
+          {commandFeedback && <p className="mt-2 rounded-lg bg-white px-3 py-2 text-[11px] font-bold text-indigo-900">{commandFeedback}</p>}
+        </div>
+
+        {campaignBreakdown.length > 0 && <div className="mt-4 rounded-xl border border-emerald-200 bg-white p-4" dir="rtl"><div className="flex items-center justify-between"><div><h3 className="text-sm font-bold text-slate-900">مستوى التحليل والتفاصيل (Breakdown Level Analysis)</h3><p className="mt-0.5 text-[10px] text-slate-600">الحملات التي اكتشفها النظام من الشيت قبل الـRun.</p></div><span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-800">{campaignBreakdown.length} حملة</span></div><div className="mt-3 max-h-52 overflow-auto rounded-lg border border-slate-200"><table className="w-full text-right text-[10px]"><thead className="sticky top-0 bg-slate-50 text-slate-600"><tr><th className="p-2">الحملة</th><th className="p-2">المنصة</th><th className="p-2">Spend</th><th className="p-2">Impressions</th><th className="p-2">Clicks</th><th className="p-2">Purchases</th></tr></thead><tbody>{campaignBreakdown.map((item, index) => <tr key={`${item.name}-${item.channel}-${index}`} className="border-t border-slate-100"><td className="p-2 font-bold text-slate-800">{item.name}</td><td className="p-2">{item.channel}</td><td className="p-2">{item.spend.toLocaleString()}</td><td className="p-2">{item.impressions.toLocaleString()}</td><td className="p-2">{item.clicks.toLocaleString()}</td><td className="p-2">{item.purchases.toLocaleString()}</td></tr>)}</tbody></table></div></div>}
 
         {/* Import context — intentionally optional so it never blocks a data upload. */}
         <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/70 p-4" dir="rtl">
